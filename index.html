@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="CarZero: motorsport team logistics. A mobile app and web portal for rally teams: schedule, cars, fuel and tyre plans, hotels, tickets and documents, offline.">
+<meta name="theme-color" content="#F3F3EE">
+<meta property="og:title" content="CarZero">
+<meta property="og:description" content="Motorsport team logistics: a mobile app and web portal for rally teams.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>CarZero | Motorsport team logistics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Inter:wght@400..800&family=JetBrains+Mono:wght@400..700&display=swap">
+<script>document.documentElement.className='js'</script>
+<style>
+/* Art direction: a rally road book. Each section opens like a road-book case (number, tulip, distance),
+   on paper in light mode and on a night stage in dark mode. Brand green, with hi-vis lime as the one signal colour. */
+:root{
+  --bg:#F3F3EE; --bg2:#E9EAE3; --surface:#FFFFFF; --surface2:#EEEFE8; --line:#DADCD3; --line2:#C3C7BC;
+  --fg:#0B100D; --fg2:#454C47; --fg3:#6B726D;
+  --accent:#0C6A40; --signal:#C4F03A; --on-signal:#0B100D; --brand:#0F5C3A;
+  --btn:#0B100D; --btn-fg:#F6F7F2; --arr:#C4F03A; --arr-fg:#0B100D;
+  --hl-bg:#C4F03A; --hl-fg:currentColor; --ring:rgba(0,0,0,0);
+  --band:#0B100D; --night:#07110B; --shadow:0 40px 80px -40px rgba(12,32,22,.45);
+  --display:'Archivo','Helvetica Neue',Arial,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --ui:Inter,'Segoe UI',system-ui,-apple-system,sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1); --gut:clamp(16px,4vw,40px);
+  color-scheme:light;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 17px/1.6 var(--display);-webkit-font-smoothing:antialiased}
+main,footer{overflow-x:clip}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(var(--gut),env(safe-area-inset-left,0px));padding-right:max(var(--gut),env(safe-area-inset-right,0px))}
+a{color:inherit}
+img{max-width:100%}
+h1,h2,h3{margin:0;font-weight:800;text-wrap:balance}
+h1{font-size:clamp(2.55rem,6.2vw,5.4rem);line-height:.96;letter-spacing:-.045em;font-stretch:106%}
+h2{font-size:clamp(2.05rem,4.5vw,3.6rem);line-height:.98;letter-spacing:-.04em;font-stretch:106%}
+h3{font-size:1.2rem;line-height:1.2;letter-spacing:-.02em;font-weight:700}
+p{margin:0}
+.lead{font-size:clamp(1.05rem,1.35vw,1.2rem);line-height:1.55;color:var(--fg2);max-width:34em;text-wrap:pretty}
+.eyebrow{font:500 .74rem/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:8px}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--fg);color:var(--bg);padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600}
+.skip:focus{top:12px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:50;border-bottom:1px solid transparent;transition:background-color .3s,border-color .3s}
+.top.scrolled{background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:saturate(1.5) blur(14px);backdrop-filter:saturate(1.5) blur(14px);border-bottom-color:var(--line)}
+.bar{height:72px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
+.brand{display:inline-flex;align-items:center;gap:11px;text-decoration:none;justify-self:start}
+.brand svg{width:34px;height:34px;flex:none}
+.brand b{font-weight:800;font-stretch:122%;letter-spacing:.14em;font-size:.95rem}
+.links{display:flex;gap:2px}
+.links a{padding:8px 13px;border-radius:999px;font-size:.92rem;font-weight:500;color:var(--fg2);text-decoration:none;transition:color .2s,background-color .2s}
+.links a:hover{color:var(--fg);background:var(--surface2)}
+.tools{display:flex;align-items:center;gap:8px;justify-self:end}
+
+/* buttons */
+.btn{--h:52px;display:inline-flex;align-items:center;gap:12px;height:var(--h);padding:0 8px 0 22px;border-radius:999px;background:var(--btn);color:var(--btn-fg);font:700 .98rem/1 var(--display);text-decoration:none;white-space:nowrap;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.btn .arr{width:36px;height:36px;border-radius:50%;background:var(--arr);color:var(--arr-fg);display:grid;place-items:center;transition:transform .25s var(--ease)}
+.btn .arr svg{width:17px;height:17px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 16px 30px -16px color-mix(in srgb,var(--btn) 85%,transparent)}
+.btn:hover .arr{transform:translateX(3px)}
+.btn.ghost{background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line2);padding:0 20px}
+.btn.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.btn.ghost .ico{width:17px;height:17px}
+.btn.sm{--h:40px;padding:0 5px 0 16px;font-size:.88rem;gap:10px}
+.btn.sm .arr{width:30px;height:30px}
+
+/* hero: a centred headline, then the phone among the notifications it sends, one set per phase of a rally */
+.hero{position:relative;isolation:isolate;margin-top:-72px;padding-top:calc(72px + clamp(36px,6vw,80px))}
+/* the rally photo is the hero's own background: it rises out of the paper under the headline and fades back into it below the phone */
+.hero::before{content:"";position:absolute;z-index:-1;left:0;right:0;top:clamp(160px,22vw,260px);bottom:0;background:url(img/hero-stage.jpg) 78% 40%/cover no-repeat;
+  -webkit-mask-image:linear-gradient(transparent,#000 42%,#000 84%,transparent);mask-image:linear-gradient(transparent,#000 42%,#000 84%,transparent)}
+.hero-copy{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(18px,2.2vw,24px)}
+/* a soft paper glow keeps the text readable where the photo starts */
+.hero-copy::before{content:"";position:absolute;z-index:-1;inset:-30px -8% -50px;background:radial-gradient(closest-side,rgba(243,243,238,.94),rgba(243,243,238,.8) 55%,rgba(243,243,238,0));pointer-events:none}
+.hero h1{max-width:13em;font-size:clamp(2.55rem,6.6vw,5.8rem)}
+.hero .lead{max-width:37em}
+.hl{color:var(--hl-fg);background:linear-gradient(var(--hl-bg),var(--hl-bg)) 0 88%/100% .3em no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.ctas{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+
+
+/* the night stage: dark in both themes */
+.final,.show-bg{--bg:#07110B;--fg:#ECF2EE;--fg2:#A9B6AE;--fg3:#7D8B83;--accent:#C4F03A;--line:rgba(236,242,238,.13);color:var(--fg);
+  background:radial-gradient(70% 85% at 50% 118%,rgba(40,132,84,.5),transparent 70%),radial-gradient(45% 60% at 95% 0%,rgba(196,240,58,.13),transparent 70%),var(--night);
+  box-shadow:inset 0 0 0 1px var(--ring)}
+.topo{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:#C4F03A;stroke-opacity:.12;stroke-width:1;pointer-events:none;z-index:-1}
+.bigzero{position:absolute;z-index:-1;width:auto;color:rgba(196,240,58,.075);pointer-events:none}
+/* no box: the phone stands straight under the headline; only the bottom of the hand is cut, and it fades out */
+.stage{position:relative;margin-top:clamp(24px,3vw,40px);height:720px;overflow-x:visible;overflow-y:clip}
+.devices{position:absolute;inset:0;-webkit-mask-image:linear-gradient(#000 80%,transparent 99%);mask-image:linear-gradient(#000 80%,transparent 99%)}
+/* the hand photo sits on top; the live app screen shows through the hole left by its green screen */
+.hand{position:absolute;z-index:3;top:52px;left:50%;width:520px;margin-left:-212px;transform:scale(var(--hs,1));transform-origin:212px 0}
+.hand-img{position:relative;z-index:2;display:block;width:520px;max-width:none;height:auto;pointer-events:none;filter:drop-shadow(0 40px 46px rgba(40,14,0,.45))}
+.hs{position:absolute;z-index:1;left:84px;top:14px;width:256px;height:511px;border-radius:32px;overflow:hidden;opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility .5s}
+.hs.on{opacity:1;visibility:visible}
+.hs .screen{border-radius:32px}
+.live{position:relative;width:8px;height:8px;border-radius:50%;background:#C4F03A;flex:none}
+.live::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid #C4F03A;opacity:0;animation:ping 2.2s var(--ease) infinite}
+@keyframes ping{0%{transform:scale(.4);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+.stage .note{position:absolute;z-index:6;right:20px;bottom:36px;padding:6px 10px;border-radius:999px;background:rgba(20,10,4,.32);font:500 .64rem/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+/* notification cards: three on each side, alternating sharp and faded; the right column leaves room for the car in the photo */
+.nc{--nc-bg:rgba(255,255,255,.96);--nc-fg:#0B100D;--nc-fg2:#5B625D;position:absolute;z-index:4;width:330px;display:flex;gap:12px;align-items:center;padding:12px 16px 12px 12px;border-radius:18px;background:var(--nc-bg);color:var(--nc-fg);box-shadow:0 26px 50px -24px rgba(0,0,0,.65);font-family:var(--ui);line-height:1.3;
+  opacity:0;transform:translateY(16px) scale(.97);transition:opacity .45s var(--ease),transform .7s var(--ease),filter .45s}
+.nc .ni{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--c,#0F5C3A);color:var(--ci,#fff)}
+.nc .ni .ico{width:20px;height:20px}
+.nc .ni>svg:not(.ico){width:40px;height:40px}
+.nc div{min-width:0}
+.nc b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.nc span{display:block;font-size:13px;color:var(--nc-fg2)}
+.nset.on .nc{opacity:1;transform:none;transition-delay:calc(var(--d) * 1s)}
+.nset.on .nc.dim{opacity:.5;filter:saturate(.6)}
+.nc.l{right:calc(50% + 180px + var(--x,0px))}
+.nc.r{left:calc(50% + 180px + var(--x,0px))}
+.p1{top:78px;--d:.05}.p2{top:206px;--x:64px;--d:.15}.p3{top:334px;--x:12px;--d:.25}
+.p4{top:96px;--x:56px;--d:.1}.p5{top:372px;--d:.2}.p6{top:488px;--x:44px;--d:.3}
+/* phase tabs, docked over the phone */
+.htabs{position:absolute;z-index:8;left:50%;bottom:26px;transform:translateX(-50%);display:flex;gap:2px;padding:5px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none;border-radius:999px;background:rgba(11,16,13,.86);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid rgba(255,255,255,.09);box-shadow:0 22px 44px -18px rgba(0,0,0,.75)}
+.htabs::-webkit-scrollbar{display:none}
+.htabs button,.htabs a{display:inline-flex;align-items:center;gap:9px;height:44px;padding:0 18px;border:0;border-radius:999px;background:none;color:rgba(236,242,238,.82);font:600 .9rem/1 var(--ui);white-space:nowrap;text-decoration:none;cursor:pointer;transition:background-color .25s,color .25s}
+.htabs .ico{width:17px;height:17px}
+.htabs button:hover,.htabs a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.htabs button[aria-pressed="true"]{background:#C4F03A;color:#0B100D}
+
+/* phones: CSS drawings of the real app (dark theme, team colour) */
+.phone{position:relative;width:262px;height:556px;padding:9px;border-radius:46px;background:#0A0C0F;flex:none;
+  box-shadow:inset 0 0 0 1.5px #3E444D,inset 0 0 0 4px #0A0C0F,inset 0 0 0 5px #20242B,0 50px 90px -40px rgba(0,0,0,.75),0 20px 34px -24px rgba(0,0,0,.6)}
+.phone::before,.phone::after{content:"";position:absolute;width:3px;border-radius:2px;background:#2B3038}
+.phone::before{left:-2px;top:116px;height:54px}
+.phone::after{right:-2px;top:150px;height:78px}
+.screen{position:relative;width:100%;height:100%;border-radius:37px;overflow:hidden;display:flex;flex-direction:column;background:var(--a-bg);color:var(--a-fg);font:400 11.5px/1.35 var(--ui);text-align:left;letter-spacing:0}
+.appd{--a-bg:#0E1116;--a-card:#171B22;--a-line:#262C36;--a-fg:#F3F4F6;--a-fg2:#9AA3AF;--a-blue:var(--team,#3D74E0);--a-blue-soft:color-mix(in srgb,var(--a-blue) 20%,#0E1116);--a-warn:#F07B2D}
+.sb{position:relative;height:36px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:3px 22px 0 26px;font-weight:600;font-size:12.5px;letter-spacing:-.01em}
+.sb::after{content:"";position:absolute;left:50%;top:9px;width:74px;height:22px;margin-left:-37px;border-radius:999px;background:#000}
+.sb .sbr{display:flex;gap:5px;align-items:center}
+.sb .sg{width:16px;height:10px}.sb .bt{width:23px;height:11px}
+.ai{display:inline-block;width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ahead{display:flex;align-items:center;gap:14px;padding:6px 16px 9px;font-weight:700;font-size:17px;letter-spacing:-.02em}
+.ahead .ai{width:17px;height:17px}
+.abody{padding:2px 12px 8px;display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:hidden}
+.aevent{display:flex;gap:10px;align-items:center;--fg:#FFFFFF;--brand:#3DBE7B}
+.aevent svg{width:36px;height:36px;flex:none}
+.ak{font-size:7.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--a-blue);display:flex;align-items:center;justify-content:space-between}.ak.warn{color:var(--a-warn)}
+.at{font-weight:700;font-size:11.5px;line-height:1.25;letter-spacing:-.01em}
+.am{color:var(--a-fg2);font-size:9px}
+.af{flex:1;min-width:0}
+.acard{background:var(--a-card);border:1px solid var(--a-line);border-radius:12px;padding:9px 10px}
+.alink{display:flex;gap:6px;align-items:center;color:var(--a-blue);font-weight:700;font-size:11px;padding:0 4px}
+.atiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.atile{background:var(--a-card);border:1px solid var(--a-line);border-radius:12px;padding:8px 9px;display:flex;flex-direction:column;gap:1px;min-height:56px}
+.atile .ai{color:var(--a-blue);margin-bottom:auto}.atile b{font-size:10.5px;margin-top:8px}.atile span{color:var(--a-fg2);font-size:8.5px}
+.arow{display:flex;gap:9px;align-items:flex-start}
+.atm{font-weight:600;font-size:9.5px;color:var(--a-fg2);width:30px;flex:none;padding-top:1px;font-variant-numeric:tabular-nums}
+.apill{font-size:7px;font-weight:700;letter-spacing:.08em;padding:3px 6px;border-radius:6px;background:var(--a-blue-soft);color:var(--a-blue);white-space:nowrap}
+.alist{display:flex;flex-direction:column;padding:2px 10px}.alist .arow{padding:8px 0;border-bottom:1px solid var(--a-line)}.alist .arow:last-child{border-bottom:0}
+.achips{display:flex;gap:5px}
+.achip{width:44px;padding:6px 0;border-radius:11px;border:1px solid var(--a-line);background:var(--a-card);display:flex;flex-direction:column;align-items:center;font-weight:700;font-size:14px;line-height:1.1}
+.achip small{font-size:6.5px;font-weight:600;letter-spacing:.06em;color:var(--a-fg2);margin-bottom:2px;max-width:40px;overflow:hidden;white-space:nowrap}
+.achip.on{background:var(--a-blue);border-color:var(--a-blue)}.achip.on small{color:rgba(255,255,255,.85)}
+.aseg{display:inline-flex;border:1px solid var(--a-line);border-radius:999px;overflow:hidden;font-size:9.5px;font-weight:600}
+.aseg b,.aseg span{padding:5px 10px}.aseg b{background:var(--a-blue-soft);color:var(--a-blue)}
+.anav{margin:0 7px 9px;display:flex;justify-content:space-around;background:var(--a-card);border:1px solid var(--a-line);border-radius:18px;padding:6px 2px 7px;font-size:6.6px;color:var(--a-fg2);flex:none}
+.anav span{display:flex;flex-direction:column;align-items:center;gap:2px}
+.anav b{display:grid;place-items:center;width:24px;height:16px;border-radius:999px}.anav .ai{width:12px;height:12px}
+.anav .on{color:var(--a-fg);font-weight:700}.anav .on b{background:var(--a-blue-soft);color:var(--a-blue)}
+.atr{display:grid;grid-template-columns:1.4fr .7fr 1.2fr 14px;gap:6px;align-items:center;padding:9px 10px;border-top:1px solid var(--a-line);font-size:10px}
+.atr.ah{border-top:0;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--a-fg2);font-weight:600}
+.atr b{font-weight:700}.atr em{font-style:normal;font-weight:800;color:#F5B83D;font-size:12px}.atr .ai{color:var(--a-fg2);width:12px}
+.acars{display:grid;grid-template-columns:1fr 1fr;gap:7px}.acars img{width:100%;aspect-ratio:1.25;object-fit:cover;border-radius:10px;display:block;background:var(--a-card)}
+.acars b{display:block;font-size:10px;margin-top:5px}.acars span{color:var(--a-fg2);font-size:9px}
+.agear{display:flex;flex-direction:column;gap:6px;font-size:10px}
+.agear span{display:flex;align-items:center;gap:7px}
+.agear i{width:13px;height:13px;border-radius:4px;border:1.5px solid var(--a-line);flex:none;display:grid;place-items:center}
+.agear .ok i{background:var(--a-blue);border-color:var(--a-blue)}
+.agear .ok i::after{content:"";width:5px;height:3px;border:solid #fff;border-width:0 0 1.6px 1.6px;transform:translateY(-1px) rotate(-45deg)}
+.amapw{position:relative;border-radius:12px;overflow:hidden;flex:none}.amapw img{display:block;width:100%;height:auto}.amapw small{position:absolute;right:6px;bottom:3px;font-size:6px;color:#555;background:rgba(255,255,255,.7);padding:0 3px;border-radius:3px}
+.aloc{display:flex;gap:9px;align-items:center;padding:8px 10px}.aloc .ai{width:13px;height:13px;color:var(--a-blue)}
+.anum{width:22px;height:22px;border-radius:7px;background:#3A2F12;color:#F5B83D;display:grid;place-items:center;font-weight:800;font-size:10px;flex:none}
+.ahotel{width:100%;height:112px;object-fit:cover;display:block;background:var(--a-line)}
+.ainfo{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--a-line);font-size:10px}.ainfo:last-child{border-bottom:0}
+.ainfo .ai{color:var(--a-fg2);width:13px;height:13px}.ainfo span{flex:1;color:var(--a-fg2)}.ainfo b{font-weight:700}.ainfo b.mut{color:var(--a-fg2);font-weight:400}
+.abtn{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--a-line);background:var(--a-card);border-radius:11px;padding:9px;font-weight:700;font-size:11px}
+/* documents: the built-in PDF reader, showing a road book page */
+.aoff{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#3DBE7B;background:rgba(61,190,123,.13);padding:4px 8px 4px 6px;border-radius:999px}
+.aoff .ai{width:10px;height:10px;stroke-width:2.6}
+.apg{margin-left:auto;font-size:10px;font-weight:600;color:var(--a-fg2);font-variant-numeric:tabular-nums}
+.page{flex:1;min-height:0;background:#F6F5EF;color:#121212;border-radius:6px;padding:7px 7px 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.page-h{display:flex;justify-content:space-between;font:700 6.5px/1 var(--mono);letter-spacing:.08em;padding:1px 2px 6px;border-bottom:1.6px solid #121212}
+.rbr{display:grid;grid-template-columns:17px 40px 1fr 54px;border-bottom:1px solid #121212;min-height:62px}
+.rbr>*{display:flex;align-items:center;padding:3px 4px;border-right:1px solid #121212}.rbr>*:last-child{border-right:0}
+.rbr .n{font-weight:800;font-size:9px;justify-content:center;padding:3px 0}
+.rbr .d{flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;font:700 11px/1 var(--mono)}.rbr .d small{font-size:7.5px;font-weight:500;color:#666}
+.rbr .tu{justify-content:center}.rbr .tu svg{width:40px;height:40px;fill:none;stroke:#121212;stroke-linecap:round;stroke-linejoin:round}
+.rbr .nt{flex-direction:column;align-items:flex-start;justify-content:center;font-size:7.5px;font-weight:800;line-height:1.25;text-transform:uppercase;letter-spacing:.02em}
+.rbr .nt b{color:#D33A2C;font-weight:800}
+/* notifications: lock screen */
+.lockscr{background:radial-gradient(120% 70% at 30% 0%,color-mix(in srgb,var(--a-blue) 70%,#0E1116),transparent 62%),radial-gradient(90% 60% at 100% 100%,color-mix(in srgb,var(--a-blue) 35%,#0E1116),transparent 70%),#0B0E13}
+.lock{flex:1;display:flex;flex-direction:column;align-items:center;padding:4px 9px 10px;min-height:0}
+.lk-date{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.85);margin-top:10px}
+.lk-time{font-size:66px;font-weight:700;letter-spacing:-.045em;line-height:1;margin-top:2px;color:rgba(255,255,255,.95)}
+.lk-list{margin-top:auto;width:100%;display:flex;flex-direction:column;gap:6px}
+.lk-n{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border-radius:17px;background:rgba(30,34,40,.62);border:1px solid rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.lk-n svg{width:28px;height:28px;border-radius:7px;flex:none}
+.lk-n div{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.lk-n i{font-style:normal;display:flex;justify-content:space-between;font-size:8.5px;color:rgba(255,255,255,.55);font-weight:500}
+.lk-n b{font-size:10.5px;font-weight:600}
+.lk-n span{font-size:10px;color:rgba(255,255,255,.82);line-height:1.3}
+.lk-bar{width:96px;height:4px;border-radius:2px;background:rgba(255,255,255,.7);margin-top:12px}
+
+/* sections and the road-book line that opens each of them */
+.sec{padding-block:clamp(76px,10vw,136px)}
+.sh{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);column-gap:clamp(32px,5vw,72px);row-gap:20px;align-items:end;margin-bottom:clamp(40px,5vw,64px)}
+.sh>.rb{grid-column:1/-1}
+.sh .lead{padding-bottom:4px}
+.sh.solo{grid-template-columns:minmax(0,1fr)}
+.sh.tight{margin-bottom:clamp(20px,3vw,32px)}
+.sh.solo h2{max-width:15em}
+.rb{display:flex;align-items:center;gap:14px;padding-top:14px;border-top:2px solid var(--fg);margin-bottom:10px}
+.rb-n{font:700 .76rem/1 var(--mono);letter-spacing:.04em;padding:6px 8px;border-radius:5px;background:var(--fg);color:var(--bg)}
+.rb .tulip{width:26px;height:26px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.rb-km{margin-left:auto;font:500 .7rem/1 var(--mono);letter-spacing:.1em;color:var(--fg3);white-space:nowrap}
+
+/* 01 partner */
+.partner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,5vw,72px);align-items:center}
+.partner .copy{display:flex;flex-direction:column;gap:20px}
+.partner-logo{display:block;width:200px;max-width:60%;height:auto;margin-top:10px}
+.pf{position:relative;margin:0;border-radius:28px;overflow:hidden;aspect-ratio:474/316;box-shadow:var(--shadow);max-width:600px;width:100%;justify-self:end}
+.pf img{display:block;width:100%;height:100%;object-fit:cover}
+.pf figcaption{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:9px;padding:8px 14px 8px 10px;border-radius:999px;background:rgba(7,17,11,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#ECF2EE;font:500 .7rem/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase}
+
+/* 02 problem */
+.pains{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.pain{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:12px 12px 26px;display:flex;flex-direction:column;gap:14px}
+.pain h3,.pain p{padding-inline:12px}
+.pain h3{margin-top:8px}
+.pain p{color:var(--fg2);font-size:.98rem}
+.art{position:relative;height:196px;border-radius:18px;background:var(--surface2);overflow:hidden;font-family:var(--ui)}
+.xls{position:absolute;left:16px;right:16px;top:16px;bottom:-12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:10.5px;line-height:1;box-shadow:0 12px 26px -16px rgba(0,0,0,.35)}
+.xls-bar{display:flex;align-items:center;gap:7px;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:600;color:var(--fg2);white-space:nowrap;overflow:hidden}
+.xls-bar i{width:12px;height:12px;border-radius:3px;background:#1F7A45;flex:none}
+.xls-grid{display:grid;grid-template-columns:20px 50px minmax(0,1fr) 56px}
+.xls-grid>*{padding:7px 7px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;color:var(--fg2);font-style:normal}
+.xls-grid b{background:var(--surface2);color:var(--fg3);font-weight:600;text-align:center;padding-inline:0}
+.xls-grid s{color:#C2410C}
+.xls-grid .y{background:color-mix(in srgb,var(--signal) 55%,transparent);color:var(--fg);font-weight:700}
+.sticky{position:absolute;right:12px;bottom:14px;transform:rotate(4deg);background:#FFE46B;color:#3A3000;font:600 12px/1.25 var(--ui);padding:9px 11px;border-radius:3px;box-shadow:0 10px 20px -8px rgba(0,0,0,.4);max-width:140px}
+.chat{position:absolute;inset:16px 16px 0;display:flex;flex-direction:column;gap:7px;font-size:12px;line-height:1.35}
+.bub{max-width:80%;padding:7px 10px 8px;border-radius:15px}
+.bub small{display:block;font-size:10px;font-weight:700;color:var(--accent);margin-bottom:1px}
+.bub.in{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px}
+.bub.out{align-self:flex-end;background:#13704A;color:#fff;border-bottom-right-radius:5px}
+.art-chat::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46px;background:linear-gradient(transparent,var(--surface2))}
+.unread{position:absolute;z-index:1;top:12px;right:12px;min-width:28px;height:24px;padding:0 8px;border-radius:12px;background:#E5484D;color:#fff;font:700 11.5px/24px var(--ui);text-align:center}
+.art-sig{display:grid;place-items:center}
+.sig-top{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;font:700 11px/1 var(--ui);color:var(--fg2)}
+.sig-top svg{width:18px;height:11px;color:var(--line2)}
+.sig{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;padding:0 16px}
+.sig .ico{width:40px;height:40px;color:var(--fg3);stroke-width:1.6}
+.sig b{font-size:14px}
+.sig span{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--fg3)}
+.spin{width:12px;height:12px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--fg2);animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+
+/* 03 the app: one phone, six screens */
+.show{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);column-gap:clamp(32px,6vw,96px);position:relative}
+.fx{display:contents}
+.fx-btn{grid-column:1;display:grid;grid-template-columns:44px minmax(0,1fr) 24px;gap:12px;align-items:center;width:100%;padding:20px 4px;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.fx:first-child .fx-btn{border-top:0}
+.fx-btn .n{font:500 .72rem/1 var(--mono);color:var(--fg3);letter-spacing:.06em}
+.fx-t{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fx-t .k{font:500 .7rem/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);transition:color .3s}
+.fx-t .h{font-size:clamp(1.15rem,1.7vw,1.45rem);font-weight:700;letter-spacing:-.025em;line-height:1.15;color:var(--fg3);transition:color .3s}
+.fx-btn .pl{width:20px;height:20px;color:var(--fg3);transition:transform .4s var(--ease)}
+.fx-btn:hover .h{color:var(--fg)}
+.fx.on .fx-t .k{color:var(--accent)}
+.fx.on .fx-t .h{color:var(--fg)}
+.fx.on .fx-btn .n{color:var(--fg)}
+.fx.on .fx-btn .pl{transform:rotate(45deg);color:var(--fg)}
+.fx-d{grid-column:1;display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--ease)}
+.fx-d>div{overflow:hidden}
+.fx-d p{padding:0 40px 24px 60px;color:var(--fg2);max-width:36em}
+.fx.on .fx-d{grid-template-rows:1fr}
+.show-bg{grid-column:2;grid-row:1/span 13;border-radius:32px;position:relative;overflow:hidden;isolation:isolate;margin-block:-8px}
+.show-bg .bigzero{height:560px;left:-110px;bottom:-120px;transform:rotate(-10deg)}
+.show .phone{grid-column:2;grid-row:1/span 12;justify-self:center;align-self:center;z-index:1;margin-block:56px 8px;opacity:0;visibility:hidden;transform:translateY(18px) scale(.97);transition:opacity .5s var(--ease),transform .7s var(--ease),visibility .5s}
+.show .fx.on .phone{opacity:1;visibility:visible;transform:none}
+.sw{grid-column:2;grid-row:13;z-index:1;justify-self:center;align-self:end;display:flex;align-items:center;gap:9px;padding:0 0 30px;font:500 .66rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:rgba(236,242,238,.6)}
+.sw button{width:22px;height:22px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--c);box-shadow:0 0 0 2px #0B140F,0 0 0 3px rgba(236,242,238,.25);transition:box-shadow .2s,transform .2s}
+.sw button:hover{transform:scale(1.1)}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 2px #0B140F,0 0 0 4px #ECF2EE}
+
+/* 04 portal */
+.win{position:relative;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;font-family:var(--ui)}
+.wtop{display:flex;align-items:center;gap:7px;height:44px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface2)}
+.wtop i{width:11px;height:11px;border-radius:50%;background:var(--line2)}
+.wurl{margin:0 auto;display:inline-flex;align-items:center;gap:7px;font:500 .72rem/1 var(--mono);color:var(--fg3);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 14px}
+.wurl .ico{width:12px;height:12px}
+.wbody{display:grid;grid-template-columns:200px minmax(0,1fr) 300px;min-height:470px;font-size:13px}
+.side{border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:2px;background:var(--bg)}
+.side .lg{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-stretch:122%;letter-spacing:.14em;font-size:10.5px;padding:2px 8px 16px}
+.side .lg svg{width:22px;height:22px}
+.side span{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:var(--fg2);font-size:12.5px}
+.side span .ico{width:15px;height:15px}
+.side .on{background:color-mix(in srgb,var(--team,#3D74E0) 14%,transparent);color:var(--team,#3D74E0);font-weight:600}
+.main{padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.mh small{display:block;font:500 9.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg3);margin-bottom:5px}
+.mh b{font-size:17px;letter-spacing:-.02em;display:inline-flex;align-items:center;gap:6px}
+.mh b .ico{width:15px;height:15px;color:var(--fg3)}
+.mh-r{display:flex;gap:8px}
+.mbtn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:9px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--fg);background:var(--surface);white-space:nowrap}
+.mbtn .ico{width:14px;height:14px}
+.mbtn.pri{background:var(--team,#3D74E0);border-color:var(--team,#3D74E0);color:#fff}
+.mdays{display:flex;gap:6px}
+.mdays span{padding:7px 12px;border-radius:9px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--fg2)}
+.mdays .on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tbl{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tr{display:grid;grid-template-columns:58px minmax(0,1.3fr) minmax(0,1.2fr) 104px;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:center;font-size:12.5px}
+.tr:last-child{border-bottom:0}
+.tr>div{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr>div:first-child{font-variant-numeric:tabular-nums;font-weight:600}
+.tr.h{background:var(--surface2);font:500 9.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
+.tr.hot{background:color-mix(in srgb,var(--signal) 16%,transparent);box-shadow:inset 3px 0 0 var(--signal)}
+.tr em{font-style:normal;font:600 9px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-left:6px}
+.tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10.5px;font-weight:700;background:color-mix(in srgb,var(--team,#3D74E0) 14%,transparent);color:var(--team,#3D74E0)}
+.hist{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--fg2)}
+.hist .ico{width:15px;height:15px;color:var(--fg3)}
+.hist small{margin-left:auto;font:500 10px var(--mono);color:var(--fg3)}
+.aside{border-left:1px solid var(--line);background:var(--bg);padding:16px}
+.aic{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 40px -26px rgba(0,0,0,.35)}
+.aic-l{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.aic-l span{display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:11.5px;color:var(--fg2);border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden}
+.aic-l span:last-child{border-bottom:0}
+.aic-l b{font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums;width:34px;flex:none}
+.aic-l i{width:14px;height:14px;border-radius:4px;background:var(--team,#3D74E0);flex:none;display:grid;place-items:center}
+.aic-l i::after{content:"";width:6px;height:3px;border:solid #fff;border-width:0 0 1.6px 1.6px;transform:translateY(-1px) rotate(-45deg)}
+.aic-h{display:flex;align-items:center;gap:9px}
+.aic-h .sp{width:28px;height:28px;border-radius:9px;background:var(--signal);color:var(--on-signal);display:grid;place-items:center}
+.aic-h .sp .ico{width:15px;height:15px}
+.aic-h b{font-size:13.5px}
+.aic-h small{margin-left:auto;font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--signal) 18%,transparent);padding:5px 7px;border-radius:6px}
+.aic-f{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px dashed var(--line2);border-radius:10px;font-size:12px;color:var(--fg2)}
+.aic-f .ico{width:15px;height:15px}
+.aic-g{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.aic-g div{padding:9px 10px;border-radius:10px;background:var(--surface2);display:flex;flex-direction:column;gap:2px}
+.aic-g b{font-size:18px;letter-spacing:-.02em}
+.aic-g span{font-size:10.5px;color:var(--fg3)}
+.aic-x{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--fg2)}
+.win-note{margin-top:14px;font:500 .66rem/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
+.caps{list-style:none;margin:clamp(40px,5vw,56px) 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 32px}
+.caps li{display:flex;flex-direction:column;gap:14px;padding-top:20px;border-top:1px solid var(--line);color:var(--fg2)}
+.capi{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);color:var(--fg)}
+.capi .ico{width:19px;height:19px}
+.caps li.ai-cap .capi{background:var(--signal);border-color:var(--signal);color:var(--on-signal)}
+
+/* 05 security: always-dark band */
+.band{--fg:#ECF2EE;--fg2:#A9B6AE;--fg3:#7D8B83;--line:rgba(236,242,238,.13);--accent:#C4F03A;--bg:var(--band);background:var(--band);color:var(--fg);box-shadow:inset 0 1px 0 var(--ring),inset 0 -1px 0 var(--ring)}
+.stack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.st{display:flex;flex-direction:column;gap:12px;padding:24px 22px 26px;border-radius:22px;background:rgba(236,242,238,.04);border:1px solid var(--line)}
+.st p{color:var(--fg2);font-size:.95rem}
+.sti{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#C4F03A;background:rgba(196,240,58,.1);border:1px solid rgba(196,240,58,.28);margin-bottom:8px}
+.sti .ico{width:21px;height:21px}
+.spec{display:flex;gap:12px;align-items:flex-start;margin-top:28px;padding:16px 18px;border-radius:16px;border:1px dashed rgba(236,242,238,.22);color:var(--fg2);font:500 .8rem/1.6 var(--mono);letter-spacing:.02em;max-width:62em}
+.spec .ico{width:18px;height:18px;color:#C4F03A;margin-top:2px}
+
+/* 06 getting started */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;position:relative}
+.steps::before{content:"";position:absolute;left:28px;right:28px;top:27px;border-top:2px dashed var(--line2)}
+.step{position:relative;display:flex;flex-direction:column}
+.sn{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px solid var(--fg);font:800 1.05rem/1 var(--display);font-stretch:118%;letter-spacing:-.02em;position:relative;z-index:1}
+.step:last-child .sn{background:var(--signal);border-color:var(--signal);color:var(--on-signal)}
+.step h3{font-size:1.55rem;letter-spacing:-.03em;margin:24px 0 16px;font-stretch:106%}
+.ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;color:var(--fg2)}
+.ticks li{display:flex;gap:11px}
+.ticks li::before{content:"";flex:none;width:17px;height:17px;margin-top:.22em;background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/contain no-repeat}
+.premium{display:flex;gap:18px;align-items:center;margin-top:clamp(40px,5vw,56px);padding:22px 24px;border-radius:22px;background:var(--surface);border:1px solid var(--line)}
+.premium .pt{display:inline-flex;align-items:center;gap:8px;flex:none;padding:8px 12px;border-radius:999px;background:var(--fg);color:var(--bg);font:600 .68rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.premium .pt .ico{width:14px;height:14px;color:var(--signal)}
+.premium p{color:var(--fg2)}
+
+/* 07 pricing */
+.price{position:relative;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:40px 56px;align-items:end;padding:clamp(28px,4.5vw,56px);border-radius:32px;background:var(--surface);border:1px solid var(--line);overflow:hidden;isolation:isolate}
+.price::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--signal)}
+.pl{display:flex;flex-direction:column;gap:14px}
+.pv{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 18px;font-weight:800;font-stretch:125%;font-size:clamp(3.6rem,9vw,7.6rem);line-height:.88;letter-spacing:-.055em}
+.pv small{font:500 .9rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
+.pn{color:var(--fg3);font-size:.92rem;max-width:30em}
+.pr{display:flex;flex-direction:column;gap:20px;align-items:flex-start;align-self:stretch;justify-content:flex-end;border-left:1.5px dashed var(--line2);padding-left:clamp(24px,4vw,56px)}
+.pfree{display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.12rem;letter-spacing:-.01em}
+.pfree span:first-child{width:34px;height:34px;border-radius:50%;background:var(--signal);color:var(--on-signal);display:grid;place-items:center;flex:none}
+.pfree .ico{width:17px;height:17px;stroke-width:2.4}
+
+/* 08 contact */
+.final{position:relative;border-radius:32px;overflow:hidden;isolation:isolate;padding:clamp(28px,5.5vw,72px);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px 56px;align-items:end}
+.final .bigzero{height:900px;left:-200px;top:-140px;transform:rotate(-8deg)}
+.final .rb{border-top-color:rgba(236,242,238,.6)}
+.final h2{font-size:clamp(2.3rem,5.2vw,4.4rem);margin:4px 0 22px;max-width:11em}
+.cls{display:flex;flex-direction:column;gap:10px}
+.cl{display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:18px;background:rgba(236,242,238,.05);border:1px solid rgba(236,242,238,.13);text-decoration:none;transition:background-color .2s,border-color .2s,transform .25s var(--ease)}
+.cl:hover{background:rgba(196,240,58,.09);border-color:rgba(196,240,58,.5);transform:translateX(3px)}
+.cl .ci{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:rgba(196,240,58,.12);color:#C4F03A;flex:none}
+.cl .ci .ico{width:20px;height:20px}
+.cl small{display:block;font:500 .66rem/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#C4F03A;margin-bottom:4px}
+.cl b{display:block;font-size:1.05rem;font-weight:600;overflow-wrap:anywhere;line-height:1.3}
+.cl .go{margin-left:auto;width:20px;height:20px}
+.cl.pri{background:#C4F03A;border-color:#C4F03A;color:#0B100D}
+.cl.pri small{color:#0B100D;opacity:.7}
+.cl.pri .ci{background:#0B100D}
+.cl.pri:hover{background:#D3F75E}
+
+/* footer */
+.foot{padding-top:clamp(48px,6vw,72px)}
+.foot .wrap{container-type:inline-size}
+.foot-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+.ftag{color:var(--fg3);font-size:.92rem}
+.flinks{display:flex;flex-wrap:wrap;gap:6px 22px}
+.flinks a{color:var(--fg2);text-decoration:none;font-size:.92rem}
+.flinks a:hover{color:var(--fg);text-decoration:underline}
+.foot-row2{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;padding-top:18px;color:var(--fg3);font-size:.85rem}
+.mega{display:flex;align-items:flex-end;margin-top:clamp(28px,4vw,48px);font-weight:900;font-stretch:125%;font-size:clamp(3rem,15vw,12.4rem);font-size:17.6cqw;line-height:.74;letter-spacing:-.06em;color:var(--bg2);white-space:nowrap;user-select:none;overflow:hidden;padding-top:.06em}
+.mega svg{height:.7em;width:auto;margin-left:.04em;margin-bottom:.005em;flex:none}
+
+/* reveal on scroll (only when JS runs) */
+.js .rv{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--d,0s)}
+.js .rv.in{opacity:1;transform:none}
+
+@media (max-width:1100px){
+  .stage .note{display:none}
+  .nc{width:270px}
+  .nc.l{right:calc(50% + 160px + var(--x,0px) * .4)}
+  .nc.r{left:calc(50% + 160px + var(--x,0px) * .4)}
+  .stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wbody{grid-template-columns:minmax(0,1fr) 290px}
+  .side{display:none}
+}
+@media (max-width:900px){
+  .links{display:none}
+  .bar{grid-template-columns:1fr auto}
+  .sh{grid-template-columns:minmax(0,1fr)}
+  .partner,.final,.price{grid-template-columns:minmax(0,1fr)}
+  .pr{border-left:0;padding-left:0;border-top:1.5px dashed var(--line2);padding-top:28px}
+  .pf{justify-self:stretch;max-width:none}
+  .pains{grid-template-columns:minmax(0,1fr)}
+  .art{height:184px}
+  .steps{grid-template-columns:minmax(0,1fr);gap:36px}
+  .steps::before{left:27px;right:auto;top:28px;bottom:28px;border-top:0;border-left:2px dashed var(--line2)}
+  .step{padding-left:80px}
+  .sn{position:absolute;left:0;top:0}
+  .step h3{margin-top:12px}
+  .caps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wbody{grid-template-columns:minmax(0,1fr)}
+  .aside{border-left:0;border-top:1px solid var(--line)}
+  .nc.dim{display:none}
+  .nc{width:236px}
+  .nc.l{right:auto;left:16px}
+  .nc.r{left:auto;right:16px}
+  .p3{top:440px}
+  /* the app: a swipeable rail, one card per screen */
+  .show{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin-inline:calc(-1 * var(--gut));padding:4px var(--gut) 20px;scrollbar-width:none;flex-wrap:nowrap}
+  .show::-webkit-scrollbar{display:none}
+  .show-bg{display:none}
+  .fx{display:flex;flex-direction:column;flex:0 0 min(82vw,330px);scroll-snap-align:center;background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:16px 16px 22px;overflow:hidden}
+  .show .phone{order:-1;opacity:1;visibility:visible;transform:none;zoom:.84;align-self:center;margin:4px 0 22px}
+  .fx-btn{pointer-events:none;padding:0 4px;border:0;grid-template-columns:minmax(0,1fr)}
+  .fx-btn .n,.fx-btn .pl{display:none}
+  .fx-t .k{color:var(--accent)}.fx-t .h{color:var(--fg)}
+  .fx-d{grid-template-rows:1fr}
+  .fx-d p{padding:10px 4px 0;font-size:.96rem}
+  .sw{position:static;justify-content:center;padding:6px 0 0;color:var(--fg3)}
+  .sw button{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--line2)}
+  .sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--fg)}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  .tools .btn{display:none}
+  .stage{height:690px}
+  .hand{top:192px;--hs:.7}
+  .hero::before{background-position:70% 50%}
+  .nc{width:auto;max-width:400px;padding:10px 14px 10px 10px}
+  .nc.l,.nc.r{left:12px;right:12px;margin-inline:auto}
+  .p1{top:14px}.p5{top:112px}.p3{display:none}
+  .htabs{bottom:16px}
+  .htabs button,.htabs a{padding:0 10px;font-size:.8rem}
+  .htabs .ico{display:none}
+  .htabs a{display:none}
+  .caps{grid-template-columns:minmax(0,1fr)}
+  .stack{grid-template-columns:minmax(0,1fr)}
+  .rb-km{display:none}
+  .tr{grid-template-columns:52px minmax(0,1fr) 84px}
+  .tr>div:nth-child(3){display:none}
+  .mh-r .mbtn:first-child{display:none}
+  .premium{flex-direction:column;align-items:flex-start}
+  .cl{padding:14px;gap:12px}
+  .cl .ci{width:38px;height:38px}
+  .cl b{font-size:.94rem}
+  .cl .go{width:17px;height:17px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs><g id="topo"><path d="M385 648Q375 616 380 596Q385 576 385 564Q386 552 381 543Q376 534 368 531Q360 528 348 531Q336 534 327 543Q318 552 313 564Q309 576 311 600Q313 624 311 628Q308 632 296 640L285 648"/><path d="M236 336Q232 335 234 340Q236 344 238 345Q240 346 242 345Q244 344 242 340Q241 336 236 336Z"/><path d="M418 648Q410 616 411 592Q411 568 410 556Q408 544 404 534Q400 525 394 518Q389 512 378 507Q368 502 356 501Q344 501 316 510Q288 519 276 520Q264 520 253 516Q241 512 231 504Q222 496 215 494Q208 493 202 494Q196 496 192 500Q189 504 188 508Q188 512 189 516Q191 520 215 539Q240 558 245 567Q250 576 255 592Q260 608 259 616Q259 624 256 628Q252 632 240 640L228 648"/><path d="M442 648Q435 616 431 584Q427 552 421 536Q415 520 408 510Q400 500 392 493Q384 487 355 475Q326 464 322 460Q318 456 315 448Q312 440 309 420Q306 400 306 388Q306 376 311 348Q315 320 328 284Q340 248 338 244Q336 240 259 268Q182 296 171 304Q160 312 156 320Q152 327 151 340Q151 352 155 360Q158 368 175 379Q192 389 196 395Q200 400 201 404Q202 408 201 414Q200 420 197 426Q193 432 181 441Q168 449 162 457Q156 464 151 480Q146 496 147 508Q148 520 151 528Q154 536 159 544Q165 552 182 568Q198 584 205 596Q211 608 210 616Q209 624 205 628Q201 632 188 640L174 648"/><path d="M465 648Q442 552 433 532Q425 512 413 495Q400 478 374 459Q348 440 342 428Q336 416 334 400Q332 384 336 352Q340 320 346 306Q352 292 368 270Q385 248 390 236Q395 224 394 216Q393 208 391 204Q388 200 382 195Q376 191 368 190Q360 189 348 192Q336 196 316 210Q296 223 272 236Q248 249 208 265Q168 281 160 286Q152 291 144 300Q136 309 130 322Q124 336 121 348Q119 360 122 384Q124 408 122 440Q120 472 122 508Q124 544 123 556Q123 568 118 576Q114 584 97 597Q80 610 67 629L55 648"/><path d="M685 -8Q696 11 704 18Q712 24 724 29Q736 34 748 37Q760 39 768 38Q776 37 784 33Q792 28 800 20Q808 11 812 2L817 -8" stroke-width="1.8"/><path d="M489 648Q450 536 441 517Q432 498 420 481Q409 464 391 448Q374 432 368 420Q362 408 359 388Q357 368 359 344Q362 320 367 308Q373 296 390 272Q407 248 411 240Q414 232 415 224Q416 216 414 208Q412 200 405 192Q397 184 387 179Q376 173 368 172Q360 171 344 175Q328 179 280 208Q232 237 191 255Q151 272 140 280Q129 288 123 296Q116 304 103 332Q89 360 85 380Q81 400 82 412Q82 424 90 464Q98 504 98 520Q98 536 93 548Q88 559 72 580Q56 600 43 624L31 648" stroke-width="1.8"/><path d="M664 -8Q673 16 685 29Q696 43 720 56Q744 70 760 74Q776 78 788 75Q800 72 812 63Q824 54 830 43Q835 32 839 12L843 -8"/><path d="M600 648Q576 641 556 641Q536 641 528 637Q520 633 516 629Q512 625 500 606Q488 587 460 528Q432 468 413 442Q394 416 389 396Q384 376 383 352Q383 328 387 316Q391 304 409 276Q428 248 431 236Q435 224 435 216Q434 208 431 200Q428 192 418 182Q408 172 396 166Q384 160 372 158Q360 155 348 156Q336 157 328 160Q320 162 268 195Q216 228 174 246Q132 264 118 276Q105 288 90 308Q76 328 65 348Q54 368 51 388Q48 408 49 420Q51 432 61 468Q72 504 73 516Q73 528 70 536Q67 544 52 568Q37 592 22 620L7 648"/><path d="M646 -8Q662 32 675 47Q688 62 720 85Q752 108 764 113Q776 118 784 118Q792 119 800 117Q808 115 824 107Q840 99 848 94Q856 89 859 84Q863 80 864 72Q866 64 865 28L864 -8"/><path d="M1171 -8Q1176 12 1180 19Q1184 26 1188 30Q1192 33 1200 35L1208 36"/><path d="M644 648Q592 611 568 606Q544 602 532 596Q520 590 512 582Q504 574 492 556Q480 538 471 521Q462 504 452 476Q443 448 434 428Q425 408 420 395Q416 381 413 363Q409 344 411 328Q413 312 431 276Q449 240 451 228Q452 216 451 208Q450 200 444 188Q438 176 429 168Q419 160 398 151Q376 143 360 141Q344 139 332 139Q320 140 312 142Q304 145 255 180Q206 216 159 235Q112 254 101 263Q91 272 62 304Q34 336 25 352Q16 368 12 384Q9 400 8 408Q8 416 24 452Q40 488 43 500Q46 512 46 520Q46 528 42 540Q37 552 15 591L-8 631"/><path d="M851 648Q824 627 812 623Q800 619 792 621Q784 623 764 636L744 648"/><path d="M1208 636Q1184 629 1176 630Q1168 631 1160 635Q1152 640 1149 644L1146 648"/><path d="M629 -8Q636 16 642 28Q648 40 664 60Q680 80 728 120Q776 161 784 166Q792 171 800 173Q808 176 819 172Q831 168 851 154Q872 139 891 130Q910 120 915 116Q919 112 922 108Q924 104 924 100Q925 96 923 88Q921 80 909 62Q896 44 892 35Q888 26 886 9L883 -8"/><path d="M1149 -8Q1155 32 1161 46Q1168 61 1176 66Q1184 72 1196 71L1208 70"/><path d="M875 648Q832 610 824 606Q816 602 808 601Q800 599 788 603Q776 607 760 619Q744 632 736 636Q728 641 716 644Q704 647 692 646Q680 645 666 638Q652 632 626 611Q600 590 568 579Q536 568 528 563Q520 558 512 550Q504 543 492 527Q481 512 477 504Q474 496 467 456Q461 416 450 376Q438 336 440 320Q442 304 454 272Q465 240 467 228Q469 216 468 208Q467 200 464 188Q460 176 455 168Q451 160 445 155Q440 150 432 146Q424 142 396 134Q368 126 348 122Q328 118 316 118Q304 118 296 120Q288 122 279 129Q270 136 246 160Q222 184 207 195Q192 206 180 211Q168 217 137 224Q107 232 92 240Q78 248 59 264Q39 280 16 308L-8 335"/><path d="M1208 164Q1200 162 1192 163Q1184 164 1176 170Q1168 175 1167 180Q1165 184 1167 188Q1168 192 1175 196Q1181 200 1195 201L1208 203"/><path d="M-8 587Q13 552 17 536Q21 520 17 504Q13 488 2 472L-8 457"/><path d="M1208 596Q1176 583 1168 584Q1160 586 1144 602Q1128 618 1118 633L1107 648"/><path d="M610 -8Q628 40 642 60Q657 80 668 93Q680 106 704 126Q728 145 748 166Q768 186 780 194Q792 202 800 204Q808 206 816 205Q824 204 832 201Q840 197 868 181Q896 165 912 163Q928 161 940 166Q952 171 980 200Q1008 229 1016 233Q1024 236 1032 236Q1040 235 1064 229Q1088 223 1100 222Q1112 222 1148 228Q1184 235 1196 235L1208 236"/><path d="M906 -8Q912 17 932 40Q952 64 963 88Q973 112 979 118Q984 125 996 129Q1008 133 1040 134Q1072 136 1092 133Q1112 130 1120 125Q1128 120 1130 116Q1133 112 1134 108Q1134 104 1130 84Q1126 64 1125 28L1125 -8"/><path d="M901 648Q840 595 832 592Q824 588 812 585Q800 583 792 583Q784 584 776 588Q768 591 752 605Q736 618 728 623Q720 628 712 630Q704 632 692 630Q680 628 670 622Q660 616 638 596Q616 576 604 569Q592 563 564 551Q536 540 518 526Q501 512 495 500Q489 488 488 452Q488 416 477 380Q467 344 465 332Q463 320 464 308Q466 296 474 264Q483 232 483 216Q484 200 478 172Q472 144 468 136Q464 129 460 126Q456 123 428 120Q400 117 360 106Q320 95 304 95Q288 95 274 104Q259 112 234 140Q209 168 193 181Q176 194 164 198Q152 202 124 205Q96 209 72 218Q48 226 28 230Q8 233 0 237L-8 241"/><path d="M1208 547Q1168 521 1160 519Q1152 518 1144 519Q1136 521 1130 528Q1125 536 1120 560Q1115 584 1111 592Q1108 600 1085 624L1062 648"/><path d="M584 -8Q593 16 602 32Q611 48 633 77Q656 106 667 117Q678 128 699 144Q720 161 744 186Q768 211 780 218Q792 225 800 228Q808 230 816 229Q824 229 836 224Q848 220 872 207Q896 195 904 193Q912 192 920 194Q928 195 936 201Q944 206 952 214Q960 222 984 261Q1008 299 1012 303Q1016 307 1020 308Q1024 309 1032 305Q1040 300 1056 283Q1072 265 1084 258Q1096 252 1112 251Q1128 249 1168 254L1208 260" stroke-width="1.8"/><path d="M955 -8Q960 3 973 14Q986 24 997 39Q1008 54 1012 56Q1016 58 1019 53Q1022 48 1022 44Q1022 40 1016 16L1011 -8" stroke-width="1.8"/><path d="M948 648Q920 638 912 634Q904 629 884 610Q864 591 856 585Q848 579 828 573Q808 567 796 567Q784 566 772 569Q760 571 752 575Q744 580 728 594Q712 609 708 610Q704 611 696 610Q688 608 666 588Q645 568 594 543Q544 519 532 510Q520 501 515 491Q510 480 508 444Q507 408 495 364Q484 320 484 308Q484 296 492 256Q500 216 499 184Q498 152 502 120Q505 88 504 80Q502 72 499 68Q496 64 492 62Q488 60 476 62Q464 64 444 76Q424 89 412 92Q400 95 360 83Q320 71 312 69Q304 68 296 68Q288 69 276 75Q264 81 252 89Q240 97 212 127Q184 157 172 166Q160 174 108 183Q56 193 24 190L-8 187" stroke-width="1.8"/><path d="M1208 506Q1176 489 1164 484Q1152 480 1140 480Q1128 479 1120 483Q1112 486 1107 491Q1101 496 1097 504Q1093 512 1089 540Q1085 568 1080 580Q1075 592 1067 600Q1059 608 1029 628L998 648" stroke-width="1.8"/><path d="M532 -8Q534 0 533 4Q532 8 530 9Q528 11 512 11Q496 11 484 15Q472 19 436 40Q400 60 388 59Q376 59 340 46Q304 34 296 33Q288 32 272 41Q256 50 205 93Q155 136 145 141Q136 147 100 157Q64 167 28 165L-8 163"/><path d="M1208 286Q1136 275 1124 275Q1112 275 1100 282Q1088 289 1072 313Q1056 338 1048 342Q1040 347 1028 347Q1016 346 1008 342Q1000 337 995 333Q991 328 972 292Q953 256 940 243Q928 231 920 228Q912 225 904 225Q896 226 872 236Q848 246 836 250Q824 253 816 253Q808 253 796 249Q784 245 772 237Q760 228 736 201Q712 175 684 153Q656 132 624 97Q592 61 580 52Q568 43 560 40Q552 37 548 43Q544 49 532 93Q520 136 517 180Q513 224 507 264Q500 304 502 316Q503 328 512 360Q522 392 527 428Q531 464 534 472Q537 480 545 488Q552 497 580 512Q608 528 620 531Q632 535 648 536Q664 538 692 534Q720 529 744 537Q768 545 812 552Q856 559 868 566Q880 573 896 591Q912 610 924 615Q936 621 948 622Q960 623 972 621Q984 618 1002 609Q1020 600 1030 592Q1039 584 1045 576Q1050 568 1053 560Q1056 552 1057 528Q1059 504 1061 494Q1064 484 1070 474Q1076 464 1086 455Q1096 446 1104 443Q1112 440 1124 440Q1136 440 1152 446Q1168 452 1188 462L1208 472"/><path d="M255 -8Q200 46 184 59Q168 71 148 92Q127 112 117 120Q107 128 98 132Q88 137 76 140Q64 143 28 143L-8 142"/><path d="M322 -8Q345 8 360 13Q376 17 382 17Q387 16 394 13Q400 10 410 1L420 -8"/><path d="M576 93Q568 93 564 96Q560 98 555 105Q550 112 543 132Q537 152 528 228Q519 304 534 376Q549 448 552 456Q555 464 562 472Q568 480 584 491Q600 502 612 506Q624 511 636 511Q648 512 676 507Q704 503 716 502Q728 502 736 505Q744 507 766 517Q788 528 802 530Q816 533 835 530Q855 528 875 516Q896 503 904 501Q912 499 916 499Q920 500 926 502Q933 504 935 508Q938 512 933 536Q928 560 931 568Q933 576 937 580Q941 584 946 586Q952 588 960 588Q968 588 976 585Q984 582 992 576Q1000 570 1007 561Q1014 552 1016 544Q1018 536 1017 528Q1016 520 1010 508Q1004 496 1003 484Q1003 472 1014 444Q1026 416 1027 408Q1029 400 1026 396Q1023 392 1007 381Q992 370 984 361Q977 352 961 320Q945 288 939 280Q933 272 926 267Q920 261 912 259Q904 257 896 258Q888 259 856 269Q824 279 816 279Q808 278 796 274Q784 270 772 262Q760 254 736 225Q712 197 680 174Q648 152 624 127Q600 102 592 97Q584 92 576 93Z"/><path d="M1208 333Q1184 332 1156 322Q1128 312 1124 312Q1120 312 1116 316Q1112 320 1110 328Q1109 336 1110 340Q1110 344 1114 348Q1117 352 1134 360Q1152 368 1170 392Q1188 416 1198 424L1208 431"/><path d="M149 -8Q121 64 113 76Q106 88 98 96Q91 104 84 108Q77 112 67 115Q56 118 24 118L-8 119"/><path d="M580 135Q576 136 572 139Q568 143 564 150Q560 158 556 171Q552 184 548 212Q544 240 542 268Q540 296 551 364Q563 432 568 444Q574 456 582 464Q590 472 599 478Q608 484 620 487Q632 491 644 491Q656 491 692 486Q728 481 740 483Q752 486 772 494Q792 503 804 504Q816 505 832 499Q848 493 893 462Q938 432 943 424Q947 416 950 400Q953 384 945 356Q936 328 928 315Q920 302 916 299Q912 296 904 295Q896 293 864 302Q832 310 824 310Q816 310 804 306Q792 302 780 296Q768 289 760 282Q752 274 732 249Q712 223 704 215Q696 207 662 188Q627 168 610 152Q592 137 588 135Q584 134 580 135Z"/><path d="M111 -8Q94 40 89 48Q84 56 78 62Q72 67 56 73Q40 79 16 82L-8 84"/><path d="M588 195Q584 197 579 202Q574 208 570 224Q566 240 569 312Q571 384 574 404Q578 424 582 432Q587 440 595 448Q603 456 610 460Q616 464 628 467Q640 470 652 470Q664 470 700 465Q736 460 764 468Q792 475 800 476Q808 476 824 470Q840 464 852 455Q864 446 874 435Q885 424 892 408Q899 392 900 384Q902 376 901 368Q900 360 894 353Q888 346 880 343Q872 341 844 339Q816 338 796 331Q776 325 764 316Q752 306 728 276Q704 246 692 236Q680 225 660 216Q640 207 616 201Q592 194 588 195Z"/><path d="M38 -8Q48 0 52 1Q56 2 60 1Q64 -1 67 -4L70 -8" stroke-width="1.8"/><path d="M652 257Q640 256 632 260Q624 263 620 269Q616 274 609 293Q603 312 599 328Q595 344 594 360Q592 376 593 388Q594 400 596 408Q599 416 606 424Q612 432 622 438Q632 444 644 447Q656 449 668 449Q680 448 708 442Q736 435 768 440Q800 445 809 443Q818 440 828 432Q839 424 845 412Q851 400 849 392Q848 384 844 380Q840 376 832 372Q824 368 792 358Q760 348 752 341Q744 334 728 314Q712 294 700 283Q688 271 676 265Q664 258 652 257Z" stroke-width="1.8"/><path d="M680 314Q672 312 664 314Q656 317 650 322Q644 328 638 340Q633 352 631 364Q629 376 630 384Q630 392 634 400Q638 408 643 412Q648 416 656 418Q664 420 672 420Q680 420 688 417Q696 414 705 403Q714 392 716 384Q719 376 717 364Q715 352 709 341Q704 330 696 323Q688 316 680 314Z"/></g></defs>
+  <symbol id="mark" viewBox="0 0 120 120">
+    <path d="M 95.4 24.6 A 50 50 0 1 0 95.4 95.4" fill="none" style="stroke:var(--brand)" stroke-width="14" stroke-linecap="round"/>
+    <ellipse cx="62" cy="60" rx="14" ry="22" fill="none" style="stroke:var(--fg)" stroke-width="9"/>
+    <path d="M 52.5 75.8 L 71.5 44.2" style="stroke:var(--fg)" stroke-width="7" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="appicon" viewBox="0 0 120 120">
+    <rect width="120" height="120" rx="27" fill="#0F5C3A"/>
+    <path d="M84.7 35.3A35 35 0 1 0 84.7 84.7" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+    <ellipse cx="61.4" cy="60" rx="9.8" ry="15.4" fill="none" stroke="#FFFFFF" stroke-width="6.3"/>
+    <path d="M54.8 71.1 68 48.9" stroke="#FFFFFF" stroke-width="4.9" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="zero" viewBox="0 0 200 300">
+    <ellipse cx="100" cy="150" rx="86" ry="136" fill="none" stroke="currentColor" stroke-width="26"/>
+    <path d="M52 232 148 68" stroke="currentColor" stroke-width="22" stroke-linecap="round"/>
+  </symbol>
+  <!-- road-book tulips: the dot is where you arrive, the thick line is the route, thin lines are other roads -->
+  <symbol id="t-straight" viewBox="0 0 32 32"><circle cx="16" cy="27.5" r="2.6" fill="currentColor" stroke="none"/><path d="M6 16h20" stroke-width="1.3"/><path d="M16 25V6M11.5 10.5 16 6l4.5 4.5" stroke-width="2.6"/></symbol>
+  <symbol id="t-right" viewBox="0 0 32 32"><circle cx="13" cy="27.5" r="2.6" fill="currentColor" stroke="none"/><path d="M13 16V5M13 16H5" stroke-width="1.3"/><path d="M13 25v-9h13M22 11.5l4.5 4.5-4.5 4.5" stroke-width="2.6"/></symbol>
+  <symbol id="t-left" viewBox="0 0 32 32"><circle cx="19" cy="27.5" r="2.6" fill="currentColor" stroke="none"/><path d="M19 16V5M19 16h8" stroke-width="1.3"/><path d="M19 25v-9H6M10 11.5 5.5 16l4.5 4.5" stroke-width="2.6"/></symbol>
+  <symbol id="t-fork-l" viewBox="0 0 32 32"><circle cx="16" cy="27.5" r="2.6" fill="currentColor" stroke="none"/><path d="m16 18 7-9" stroke-width="1.3"/><path d="M16 25v-7L9 9M8.8 15 9 9l5.9 1.3" stroke-width="2.6"/></symbol>
+  <symbol id="t-fork-r" viewBox="0 0 32 32"><circle cx="16" cy="27.5" r="2.6" fill="currentColor" stroke="none"/><path d="M16 18 9 9" stroke-width="1.3"/><path d="M16 25v-7l7-9M23.2 15 23 9l-5.9 1.3" stroke-width="2.6"/></symbol>
+  <symbol id="t-finish" viewBox="0 0 32 32"><circle cx="16" cy="27.5" r="2.6" fill="currentColor" stroke="none"/><path d="M16 25V12" stroke-width="2.6"/><path d="M5 8.5h22" stroke-width="4.2" stroke-dasharray="3.67 3.67"/></symbol>
+  <!-- status bar -->
+  <symbol id="s-sig" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx=".9" fill="currentColor"/><rect x="4.6" y="4.8" width="3" height="6.2" rx=".9" fill="currentColor"/><rect x="9.2" y="2.4" width="3" height="8.6" rx=".9" fill="currentColor"/><rect x="13.8" y="0" width="3" height="11" rx=".9" fill="currentColor"/></symbol>
+  <symbol id="s-bat" viewBox="0 0 25 12"><rect x=".6" y=".6" width="21" height="10.8" rx="3.4" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.1"/><rect x="2.3" y="2.3" width="14.5" height="7.4" rx="1.9" fill="currentColor"/><path d="M23.4 4.3v3.4" stroke="currentColor" stroke-opacity=".45" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <!-- icons (24 x 24, stroked) -->
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-mega" viewBox="0 0 24 24"><path d="M4 10v4l12 5V5zM16 9h1.5a3 3 0 0 1 0 6H16M7 15l1 5h2.5l-1-4"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.4 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6.6"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 21h7M10 17h4"/></symbol>
+  <symbol id="i-fuel" viewBox="0 0 24 24"><path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M4 21h12M5 10h10M15 8l3 3v6a1.5 1.5 0 0 0 3 0V9l-3-3"/></symbol>
+  <symbol id="i-tyre" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M7 8.5a6 6 0 0 1 2-1.8M17 15.5a6 6 0 0 1-2 1.8"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16h14M6 16l1.5-5h9L18 16"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 4-5 7-5s5.8 1.4 7 5"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+  <symbol id="i-nav" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8z"/></symbol>
+  <symbol id="i-room" viewBox="0 0 24 24"><path d="M4 21h16M6 21V4h9v17M15 6h3v15M11 12h.01"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.3 3.3 0 0 1 0 6.5M18 15c1.6.6 2.6 2.2 3 5"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 7l5 5-5 5M19 12H8M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M10.5 18.5h3"/></symbol>
+  <symbol id="i-nosig" viewBox="0 0 24 24"><path d="M4 20v-2M9 20v-5M14 20v-8M19 20V7M3 4l18 17"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M8.5 6.6A6 6 0 0 1 17.9 11a3.6 3.6 0 0 1 2.6 4.8M17 19H7a4.5 4.5 0 0 1-1.6-8.7M3 3l18 18"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v6c0 4.5 3.2 7.8 7.5 9 4.3-1.2 7.5-4.5 7.5-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v7H7z"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.8 2-1.8 0-1.4-1.3-1.6-1.3-2.9 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10" cy="7" r="1.2"/><circle cx="15" cy="7.2" r="1.2"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4.5h4.5M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></symbol>
+  <symbol id="i-tel" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/><path d="M8 7.5h.01M8 16.5h.01"/></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
+</svg>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#top" aria-label="CarZero"><svg aria-hidden="true"><use href="#mark"/></svg><b>CARZERO</b></a>
+    <nav class="links" aria-label="Main">
+      <a href="#app">The app</a>
+      <a href="#portal">Portal</a>
+      <a href="#security">Security</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <div class="tools">
+      <a class="btn sm" href="mailto:tanguypavat@carzeroapp.com?subject=CarZero%20demo"><span>Book a demo</span><span class="arr"><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <h1><span>Everything a rally crew needs,</span> <span class="hl">in one pocket-sized app.</span></h1>
+        <p class="lead">CarZero replaces the spreadsheets, PDFs and group chats a rally team runs on. Schedule, cars, fuel and tyre plans, hotels, tickets and documents: one source of truth on every phone, even with no signal.</p>
+      </div>
+
+      <div class="stage">
+        <p class="note">Screens use sample data.</p>
+        <div class="devices" role="img" aria-label="App screens with sample data">
+          <div class="hand">
+            <div class="hs appd on"><div class="screen">
+              <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+              <div class="ahead"><svg class="ai"><use href="#i-menu"/></svg>Schedule</div>
+              <div class="abody">
+                <div class="achips"><span class="achip on"><small>SHAKED…</small>30</span><span class="achip"><small>DAY 1</small>31</span><span class="achip"><small>DAY 2</small>1</span><span class="achip"><small>DAY 3</small>2</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between"><span class="aseg"><b>My day</b><span>Team</span></span><span class="am" style="letter-spacing:.08em;font-weight:600">30 OCT</span></div>
+                <div class="acard alist">
+                  <div class="arow"><span class="atm">07:00</span><div class="af"><div class="at">Breakfast</div><div class="am">Harbour View Hotel</div></div><span class="apill">ALL</span></div>
+                  <div class="arow"><span class="atm">09:30</span><div class="af"><div class="at">Documents check</div><div class="am">Scrutineering</div></div><span class="apill">ALEX +5</span></div>
+                  <div class="arow"><span class="atm">12:00</span><div class="af"><div class="at">Team lunch</div><div class="am">Service park</div></div><span class="apill">ALL</span></div>
+                  <div class="arow"><span class="atm">13:30</span><div class="af"><div class="at">Shakedown, 4 runs max</div><div class="am">Shakedown stage</div></div><span class="apill">MORGAN +5</span></div>
+                  <div class="arow"><span class="atm">18:30</span><div class="af"><div class="at">Ceremonial start</div><div class="am">Town Basin</div></div><span class="apill">ALL</span></div>
+                </div>
+              </div>
+              <div class="anav"><span><b><svg class="ai"><use href="#i-home"/></svg></b>Home</span><span><b><svg class="ai"><use href="#i-car"/></svg></b>Cars</span><span><b><svg class="ai"><use href="#i-pin"/></svg></b>Locations</span><span><b><svg class="ai"><use href="#i-user"/></svg></b>My Info</span><span class="on"><b><svg class="ai"><use href="#i-cal"/></svg></b>Schedule</span><span><b><svg class="ai"><use href="#i-doc"/></svg></b>Documents</span></div>
+            </div></div>
+              <div class="hs appd"><div class="screen">
+              <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+              <div class="ahead"><svg class="ai"><use href="#i-menu"/></svg>Home</div>
+              <div class="abody">
+                <div class="aevent"><svg><use href="#mark"/></svg><div><div class="ak">Current event</div><div class="at" style="font-size:16px">Northland Rally</div><div class="am">31 OCT – 2 NOV 2026</div></div></div>
+                <div class="acard"><div class="ak warn">Update · 07:42 <svg class="ai" style="width:12px;height:12px"><use href="#i-chev"/></svg></div><div class="at" style="margin:4px 0 3px">Service A moved to 11:15. Tyres for SS4: 4x gravel hard.</div><div class="am">From Alex Martin</div></div>
+                <div class="alink"><svg class="ai"><use href="#i-mega"/></svg>Post an update</div>
+                <div class="atiles">
+                  <div class="atile"><svg class="ai"><use href="#i-route"/></svg><b>Itinerary</b><span>Road book</span></div>
+                  <div class="atile"><svg class="ai"><use href="#i-trophy"/></svg><b>Live results</b><span>Live timing</span></div>
+                  <div class="atile"><svg class="ai"><use href="#i-fuel"/></svg><b>Refuel</b><span>Timings &amp; gear</span></div>
+                  <div class="atile"><svg class="ai"><use href="#i-tyre"/></svg><b>Tyres</b><span>All changes</span></div>
+                </div>
+                <div class="acard"><div class="ak">Next up · 31 Oct</div><div class="arow" style="margin-top:6px"><span class="atm">11:15</span><div class="af"><div class="at">Service A (30 min)</div><div class="am">Service park</div></div><span class="apill">ALL</span></div></div>
+              </div>
+              <div class="anav"><span class="on"><b><svg class="ai"><use href="#i-home"/></svg></b>Home</span><span><b><svg class="ai"><use href="#i-car"/></svg></b>Cars</span><span><b><svg class="ai"><use href="#i-pin"/></svg></b>Locations</span><span><b><svg class="ai"><use href="#i-user"/></svg></b>My Info</span><span><b><svg class="ai"><use href="#i-cal"/></svg></b>Schedule</span><span><b><svg class="ai"><use href="#i-doc"/></svg></b>Documents</span></div>
+            </div></div>
+              <div class="hs appd"><div class="screen">
+              <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+              <div class="ahead"><svg class="ai"><use href="#i-menu"/></svg>Locations</div>
+              <div class="abody">
+                <div class="amapw"><img src="img/locations-map.jpg" alt="" width="560" height="599" loading="lazy"><small>© OpenStreetMap contributors</small></div>
+                <div class="acard aloc"><span class="anum">1</span><div class="af"><div class="at">Service park</div><div class="am">Team area B4. Power and water on site.</div></div><svg class="ai"><use href="#i-nav"/></svg></div>
+                <div class="acard aloc"><span class="anum">2</span><div class="af"><div class="at">Harbour View Hotel</div><div class="am">Managers, drivers and co-drivers.</div></div><svg class="ai"><use href="#i-nav"/></svg></div>
+              </div>
+              <div class="anav"><span><b><svg class="ai"><use href="#i-home"/></svg></b>Home</span><span><b><svg class="ai"><use href="#i-car"/></svg></b>Cars</span><span class="on"><b><svg class="ai"><use href="#i-pin"/></svg></b>Locations</span><span><b><svg class="ai"><use href="#i-user"/></svg></b>My Info</span><span><b><svg class="ai"><use href="#i-cal"/></svg></b>Schedule</span><span><b><svg class="ai"><use href="#i-doc"/></svg></b>Documents</span></div>
+            </div></div>
+            <img class="hand-img" src="img/hero-hand.webp" width="1024" height="1536" alt="" fetchpriority="high">
+          </div>
+          <div class="nset on">
+            <div class="nc l p1"><span class="ni" style="--c:#0F5C3A"><svg aria-hidden="true"><use href="#appicon"/></svg></span><div><b>Your flight is in My info</b><span>Auckland → Whangārei, Thu 29 Oct, 08:10</span></div></div>
+            <div class="nc l p2 dim"><span class="ni" style="--c:#3D74E0"><svg class="ico" aria-hidden="true"><use href="#i-room"/></svg></span><div><b>Room 201, Harbour View Hotel</b><span>You share it with Sam.</span></div></div>
+            <div class="nc l p3"><span class="ni" style="--c:#C4F03A;--ci:#0B100D"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg></span><div><b>Road book v2 is ready</b><span>Saved on your phone for offline reading.</span></div></div>
+            <div class="nc r p4 dim"><span class="ni" style="--c:#F07B2D"><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg></span><div><b>Recce starts tomorrow</b><span>Meet at the service park, 06:30.</span></div></div>
+            <div class="nc r p5"><span class="ni" style="--c:#0F5C3A"><svg class="ico" aria-hidden="true"><use href="#i-cal"/></svg></span><div><b>Shakedown at 13:30</b><span>4 runs max. Morgan, Alex and 4 others.</span></div></div>
+            <div class="nc r p6 dim"><span class="ni" style="--c:#3D74E0"><svg class="ico" aria-hidden="true"><use href="#i-car"/></svg></span><div><b>Plans ready for car 2</b><span>Fuel and tyres for every service.</span></div></div>
+          </div>
+          <div class="nset">
+            <div class="nc l p1"><span class="ni" style="--c:#F07B2D"><svg aria-hidden="true"><use href="#appicon"/></svg></span><div><b>Service A moved to 11:15</b><span>Tyres for SS4: 4× gravel hard.</span></div></div>
+            <div class="nc l p2 dim"><span class="ni" style="--c:#3D74E0"><svg class="ico" aria-hidden="true"><use href="#i-fuel"/></svg></span><div><b>Refuel 2: 48 L</b><span>i20 N Rally2, before SS5.</span></div></div>
+            <div class="nc l p3"><span class="ni" style="--c:#C4F03A;--ci:#0B100D"><svg class="ico" aria-hidden="true"><use href="#i-nosig"/></svg></span><div><b>No signal. Everything still opens.</b><span>Plans, road book and tickets are on the phone.</span></div></div>
+            <div class="nc r p4 dim"><span class="ni" style="--c:#0F5C3A"><svg class="ico" aria-hidden="true"><use href="#i-people"/></svg></span><div><b>Team lunch at 12:00</b><span>Service park, team area B4.</span></div></div>
+            <div class="nc r p5"><span class="ni" style="--c:#0F5C3A"><svg class="ico" aria-hidden="true"><use href="#i-tyre"/></svg></span><div><b>Tyre change logged by Sam</b><span>Car 2 · 4× gravel soft, set 3.</span></div></div>
+            <div class="nc r p6 dim"><span class="ni" style="--c:#F07B2D"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span><div><b>Refuel gear: 6 of 8 ready</b><span>Checklist for Service B.</span></div></div>
+          </div>
+          <div class="nset">
+            <div class="nc l p1"><span class="ni" style="--c:#0F5C3A"><svg class="ico" aria-hidden="true"><use href="#i-nav"/></svg></span><div><b>SS4 starts in 25 min</b><span>One tap opens navigation to the start.</span></div></div>
+            <div class="nc l p2 dim"><span class="ni" style="--c:#F07B2D"><svg class="ico" aria-hidden="true"><use href="#i-trophy"/></svg></span><div><b>Live results updated</b><span>Car 1 is 3rd after SS3.</span></div></div>
+            <div class="nc l p3"><span class="ni" style="--c:#3D74E0"><svg class="ico" aria-hidden="true"><use href="#i-cal"/></svg></span><div><b>Regroup moved to 15:40</b><span>Only the crews concerned are notified.</span></div></div>
+            <div class="nc r p4 dim"><span class="ni" style="--c:#0F5C3A"><svg class="ico" aria-hidden="true"><use href="#i-room"/></svg></span><div><b>Tonight: Harbour View Hotel</b><span>Room 201, check-in from 14:00.</span></div></div>
+            <div class="nc r p5"><span class="ni" style="--c:#C4F03A;--ci:#0B100D"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg></span><div><b>Finish ceremony at 18:30</b><span>Town Basin. Everyone.</span></div></div>
+            <div class="nc r p6 dim"><span class="ni" style="--c:#3D74E0"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg></span><div><b>Road book page 12 updated</b><span>Junction 47: caution, loose gravel.</span></div></div>
+          </div>
+        </div>
+        <div class="htabs" role="group" aria-label="Phases of a rally">
+          <button type="button" aria-pressed="true"><svg class="ico" aria-hidden="true"><use href="#i-cal"/></svg><span>Before the rally</span></button>
+          <button type="button" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-tyre"/></svg><span>Service park</span></button>
+          <button type="button" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg><span>On the stages</span></button>
+          <a href="mailto:tanguypavat@carzeroapp.com?subject=CarZero%20demo"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Book a demo</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="partner" class="sec">
+    <div class="wrap">
+      <div class="sh solo tight rv"><div class="rb"><span class="rb-n">01</span><svg class="tulip" aria-hidden="true"><use href="#t-straight"/></svg><span class="eyebrow">In the field</span><span class="rb-km" aria-hidden="true">0.00 km</span></div></div>
+      <div class="partner">
+        <div class="copy rv">
+          <h2>Used by PRG, the team of Hayden Paddon.</h2>
+          <p class="lead">CarZero is built with PRG and used by the crew during their rally season: schedule, cars, fuel and tyre plans, hotels and tickets in every pocket.</p>
+          <img class="partner-logo" src="img/prg-logo.png" width="640" height="228" alt="Paddon Racing Group (PRG)" loading="lazy">
+        </div>
+        <figure class="pf rv" style="--d:.1s">
+          <img src="img/prg-hayden.jpg" width="474" height="316" alt="The PRG crew celebrating next to their Hyundai rally car" loading="lazy">
+          <figcaption><span class="live" aria-hidden="true"></span>Paddon Racing Group</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:0">
+    <div class="wrap">
+      <div class="sh solo rv"><div class="rb"><span class="rb-n">02</span><svg class="tulip" aria-hidden="true"><use href="#t-right"/></svg><span class="eyebrow">The problem</span><span class="rb-km" aria-hidden="true">2.35 km</span></div><h2>A rally week runs on scattered information.</h2></div>
+      <div class="pains">
+        <div class="pain rv">
+          <div class="art" aria-hidden="true">
+            <div class="xls">
+              <div class="xls-bar"><i></i><span>Rally_plan_v7_FINAL(2).xlsx</span></div>
+              <div class="xls-grid">
+                <b></b><b>A</b><b>B</b><b>C</b>
+                <b>1</b><span>07:00</span><span>Breakfast</span><span>All</span>
+                <b>2</b><span>09:30</span><span>Docs check</span><span>Alex +5</span>
+                <b>3</b><span><s>10:45</s></span><span>Service A</span><span>All</span>
+                <b>4</b><span class="y">11:15?</span><span>Service A</span><span>All</span>
+                <b>5</b><span>13:30</span><span>Shakedown</span><span>Morgan</span>
+              </div>
+            </div>
+            <span class="sticky">Which version is right?</span>
+          </div>
+          <h3>The schedule is a spreadsheet</h3><p>Plans change by the hour. A shared file means everyone is working from a different version.</p>
+        </div>
+        <div class="pain rv" style="--d:.1s">
+          <div class="art art-chat" aria-hidden="true">
+            <span class="unread">148</span>
+            <div class="chat">
+              <div class="bub in"><small>Sam</small><span>Which hotel are the mechanics in?</span></div>
+              <div class="bub out"><span>Scroll up, I sent it on Monday</span></div>
+              <div class="bub in"><small>Sam</small><span>Which message??</span></div>
+            </div>
+          </div>
+          <h3>Details are buried in chats</h3><p>Hotel rooms, tickets, refuel amounts and tyre sets get scrolled past and lost.</p>
+        </div>
+        <div class="pain rv" style="--d:.2s">
+          <div class="art art-sig" aria-hidden="true">
+            <div class="sig-top"><span>SOS</span><svg><use href="#s-sig"/></svg></div>
+            <div class="sig"><svg class="ico"><use href="#i-nosig"/></svg><b>No service</b><span><i class="spin"></i><span>Loading schedule…</span></span></div>
+          </div>
+          <h3>Signal disappears</h3><p>Service parks and remote zones are where the information matters most, and where the network is worst.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="app" class="sec" style="padding-top:0">
+    <div class="wrap">
+      <div class="sh rv"><div class="rb"><span class="rb-n">03</span><svg class="tulip" aria-hidden="true"><use href="#t-fork-l"/></svg><span class="eyebrow">The app</span><span class="rb-km" aria-hidden="true">4.80 km</span></div><h2>Each person opens it and sees their own day.</h2><p class="lead">Built for gloves, sun and bad signal. Crew see their own schedule, tickets and room, and get a notification when something changes for them.</p></div>
+
+      <div class="show rv">
+        <div class="show-bg" aria-hidden="true"><svg class="topo" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid slice"><use href="#topo"/></svg><svg class="bigzero" viewBox="0 0 200 300"><use href="#zero"/></svg></div>
+
+        <div class="fx on">
+          <button class="fx-btn" type="button" aria-pressed="true"><span class="n">01</span><span class="fx-t"><span class="k">Schedule</span><span class="h">Day by day, filtered by who</span></span><svg class="ico pl" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <div class="fx-d"><div><p>Every activity is tagged with who it concerns: a person, a crew, a car or everyone. Switch between your own day and the whole team's.</p></div></div>
+          <div class="phone appd" role="img" aria-label="Schedule"><div class="screen">
+            <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+            <div class="ahead"><svg class="ai"><use href="#i-menu"/></svg>Schedule</div>
+            <div class="abody">
+              <div class="achips"><span class="achip"><small>SHAKED…</small>30</span><span class="achip on"><small>DAY 1</small>31</span><span class="achip"><small>DAY 2</small>1</span><span class="achip"><small>DAY 3</small>2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="aseg"><b>My day</b><span>Team</span></span><span class="am" style="letter-spacing:.08em;font-weight:600">31 OCT</span></div>
+              <div class="acard alist">
+                <div class="arow"><span class="atm">06:30</span><div class="af"><div class="at">Breakfast</div><div class="am">Harbour View Hotel</div></div><span class="apill">ALL</span></div>
+                <div class="arow"><span class="atm">07:40</span><div class="af"><div class="at">Leave for SS1</div><div class="am">Service park</div></div><span class="apill">CREW A</span></div>
+                <div class="arow"><span class="atm">11:15</span><div class="af"><div class="at">Service A (30 min)</div><div class="am">Service park</div></div><span class="apill">ALL</span></div>
+                <div class="arow"><span class="atm">14:20</span><div class="af"><div class="at">Refuel 2</div><div class="am">Remote refuel zone</div></div><span class="apill">REFUEL</span></div>
+                <div class="arow"><span class="atm">18:05</span><div class="af"><div class="at">Service B (45 min)</div><div class="am">Service park</div></div><span class="apill">ALL</span></div>
+                <div class="arow"><span class="atm">20:00</span><div class="af"><div class="at">Team dinner</div><div class="am">Harbour View Hotel</div></div><span class="apill">ALL</span></div>
+              </div>
+            </div>
+            <div class="anav"><span><b><svg class="ai"><use href="#i-home"/></svg></b>Home</span><span><b><svg class="ai"><use href="#i-car"/></svg></b>Cars</span><span><b><svg class="ai"><use href="#i-pin"/></svg></b>Locations</span><span><b><svg class="ai"><use href="#i-user"/></svg></b>My Info</span><span class="on"><b><svg class="ai"><use href="#i-cal"/></svg></b>Schedule</span><span><b><svg class="ai"><use href="#i-doc"/></svg></b>Documents</span></div>
+          </div></div>
+        </div>
+
+        <div class="fx">
+          <button class="fx-btn" type="button" aria-pressed="false"><span class="n">02</span><span class="fx-t"><span class="k">Cars</span><span class="h">Fuel and tyre plans per car</span></span><svg class="ico pl" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <div class="fx-d"><div><p>Amounts to fill, tyre sets and rim sets for each timing, with a refuel gear checklist. Changes made in the field keep track of who made them.</p></div></div>
+          <div class="phone appd" role="img" aria-label="Cars"><div class="screen">
+            <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+            <div class="ahead"><svg class="ai"><use href="#i-back"/></svg></div>
+            <div class="abody">
+              <div><div class="at" style="font-size:17px;letter-spacing:-.03em">Refuel 2 – Service park</div><div class="am" style="font-size:10px;margin-top:2px">Day 1 · Fuel plan</div></div>
+              <div class="acard" style="padding:0">
+                <div class="atr ah"><span>Car</span><span>Litres</span><span>Fuel type</span><i></i></div>
+                <div class="atr"><b>i20 N Rally2</b><em>48</em><span>Rally fuel 102</span><svg class="ai"><use href="#i-dots"/></svg></div>
+                <div class="atr"><b>Fiesta Rally2</b><em>50</em><span>Rally fuel 102</span><svg class="ai"><use href="#i-dots"/></svg></div>
+              </div>
+              <div class="ak" style="color:var(--a-fg2);margin-top:2px">Cars &amp; connectors</div>
+              <div class="acars">
+                <div><img src="https://images.unsplash.com/photo-1548504240-3dd72f99dc72?w=300&amp;q=70&amp;auto=format&amp;fit=crop" alt="" loading="lazy"><b>i20 N Rally2</b><span>Dry break</span></div>
+                <div><img src="https://images.unsplash.com/photo-1565128555334-7fa709893f16?w=300&amp;q=70&amp;auto=format&amp;fit=crop" alt="" loading="lazy"><b>Fiesta Rally2</b><span>Dry break</span></div>
+              </div>
+              <div class="ak" style="color:var(--a-fg2);margin-top:2px">Refuel gear · 3/4</div>
+              <div class="acard agear"><span class="ok"><i></i>Fuel rig and hoses</span><span class="ok"><i></i>Fire extinguishers</span><span class="ok"><i></i>Drip trays</span><span><i></i>Spare dry-break couplers</span></div>
+            </div>
+            <div class="anav"><span><b><svg class="ai"><use href="#i-home"/></svg></b>Home</span><span class="on"><b><svg class="ai"><use href="#i-car"/></svg></b>Cars</span><span><b><svg class="ai"><use href="#i-pin"/></svg></b>Locations</span><span><b><svg class="ai"><use href="#i-user"/></svg></b>My Info</span><span><b><svg class="ai"><use href="#i-cal"/></svg></b>Schedule</span><span><b><svg class="ai"><use href="#i-doc"/></svg></b>Documents</span></div>
+          </div></div>
+        </div>
+
+        <div class="fx">
+          <button class="fx-btn" type="button" aria-pressed="false"><span class="n">03</span><span class="fx-t"><span class="k">Locations</span><span class="h">A map of every place that matters</span></span><svg class="ico pl" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <div class="fx-d"><div><p>Service parks, hotels and stage starts on one map. One tap opens navigation. Places that share a spot are grouped.</p></div></div>
+          <div class="phone appd" role="img" aria-label="Locations"><div class="screen">
+            <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+            <div class="ahead"><svg class="ai"><use href="#i-menu"/></svg>Locations</div>
+            <div class="abody">
+              <div class="amapw"><img src="img/locations-map.jpg" alt="Map of the rally places around Whangarei" width="560" height="599" loading="lazy"><small>© OpenStreetMap contributors</small></div>
+              <div class="acard aloc"><span class="anum">1</span><div class="af"><div class="at">Service park</div><div class="am">Team area B4. Power and water on site.</div></div><svg class="ai"><use href="#i-nav"/></svg></div>
+              <div class="acard aloc"><span class="anum">2</span><div class="af"><div class="at">Harbour View Hotel</div><div class="am">Managers, drivers and co-drivers.</div></div><svg class="ai"><use href="#i-nav"/></svg></div>
+              <div class="acard aloc"><span class="anum">3</span><div class="af"><div class="at">Riverside Motor Lodge</div><div class="am">Mechanics and refuel crew.</div></div><svg class="ai"><use href="#i-nav"/></svg></div>
+            </div>
+            <div class="anav"><span><b><svg class="ai"><use href="#i-home"/></svg></b>Home</span><span><b><svg class="ai"><use href="#i-car"/></svg></b>Cars</span><span class="on"><b><svg class="ai"><use href="#i-pin"/></svg></b>Locations</span><span><b><svg class="ai"><use href="#i-user"/></svg></b>My Info</span><span><b><svg class="ai"><use href="#i-cal"/></svg></b>Schedule</span><span><b><svg class="ai"><use href="#i-doc"/></svg></b>Documents</span></div>
+          </div></div>
+        </div>
+
+        <div class="fx">
+          <button class="fx-btn" type="button" aria-pressed="false"><span class="n">04</span><span class="fx-t"><span class="k">My info</span><span class="h">Hotel, room, roommates, tickets</span></span><svg class="ico pl" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <div class="fx-d"><div><p>Personal details and travel tickets are visible only to the person they belong to, and to team admins.</p></div></div>
+          <div class="phone appd" role="img" aria-label="My info"><div class="screen">
+            <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+            <div class="ahead"><svg class="ai"><use href="#i-menu"/></svg>My info</div>
+            <div class="abody">
+              <div class="acard" style="padding:0;overflow:hidden"><img class="ahotel" src="https://images.unsplash.com/photo-1757839939502-afa95e78dd60?w=700&amp;q=70&amp;auto=format&amp;fit=crop" alt="" loading="lazy"><div style="padding:8px 10px 10px"><div class="ak">Accommodation</div><div class="at" style="font-size:14px;letter-spacing:-.02em">Harbour View Hotel</div><div class="am">12 Marina Parade, Whangarei</div></div></div>
+              <div class="acard" style="padding:0 10px">
+                <div class="ainfo"><svg class="ai"><use href="#i-room"/></svg><span>Room</span><b>201</b></div>
+                <div class="ainfo"><svg class="ai"><use href="#i-people"/></svg><span>Roommates</span><b class="mut">—</b></div>
+                <div class="ainfo"><svg class="ai"><use href="#i-in"/></svg><span>Check-in</span><b>29/10/2026</b></div>
+                <div class="ainfo"><svg class="ai"><use href="#i-out"/></svg><span>Check-out</span><b>03/11/2026</b></div>
+              </div>
+              <div class="abtn"><svg class="ai"><use href="#i-nav"/></svg>Directions</div>
+            </div>
+            <div class="anav"><span><b><svg class="ai"><use href="#i-home"/></svg></b>Home</span><span><b><svg class="ai"><use href="#i-car"/></svg></b>Cars</span><span><b><svg class="ai"><use href="#i-pin"/></svg></b>Locations</span><span class="on"><b><svg class="ai"><use href="#i-user"/></svg></b>My Info</span><span><b><svg class="ai"><use href="#i-cal"/></svg></b>Schedule</span><span><b><svg class="ai"><use href="#i-doc"/></svg></b>Documents</span></div>
+          </div></div>
+        </div>
+
+        <div class="fx">
+          <button class="fx-btn" type="button" aria-pressed="false"><span class="n">05</span><span class="fx-t"><span class="k">Documents</span><span class="h">Road book and itinerary, offline</span></span><svg class="ico pl" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <div class="fx-d"><div><p>PDFs open in a built-in reader and stay readable once opened, without any connection.</p></div></div>
+          <div class="phone appd" role="img" aria-label="Documents"><div class="screen">
+            <div class="sb"><span>07:42</span><span class="sbr"><svg class="sg" style="opacity:.3"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+            <div class="ahead"><svg class="ai"><use href="#i-back"/></svg>Road book<span class="apg">12 / 48</span></div>
+            <div class="abody">
+              <span class="aoff"><svg class="ai"><use href="#i-check"/></svg>Saved offline</span>
+              <div class="page">
+                <div class="page-h"><span>NORTHLAND RALLY</span><span>SS4 · FOREST</span></div>
+                <div class="rbr"><span class="n">41</span><span class="d">12.40<small>0.35</small></span><span class="tu"><svg><use href="#t-right"/></svg></span><span class="nt"><b>!! Ruts</b>Over jump</span></div>
+                <div class="rbr"><span class="n">42</span><span class="d">12.95<small>0.55</small></span><span class="tu"><svg><use href="#t-fork-l"/></svg></span><span class="nt">Keep left</span></div>
+                <div class="rbr"><span class="n">43</span><span class="d">13.80<small>0.85</small></span><span class="tu"><svg><use href="#t-straight"/></svg></span><span class="nt">Crossroad<br>Straight</span></div>
+                <div class="rbr"><span class="n">44</span><span class="d">14.10<small>0.30</small></span><span class="tu"><svg><use href="#t-left"/></svg></span><span class="nt"><b>! Narrow</b>Bridge</span></div>
+                <div class="rbr"><span class="n">45</span><span class="d">15.05<small>0.95</small></span><span class="tu"><svg><use href="#t-finish"/></svg></span><span class="nt">Flying<br>finish</span></div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="fx">
+          <button class="fx-btn" type="button" aria-pressed="false"><span class="n">06</span><span class="fx-t"><span class="k">Notifications</span><span class="h">Told the moment plans change</span></span><svg class="ico pl" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <div class="fx-d"><div><p>A moved slot reaches only the people in it; a new document, plan or update reaches the whole crew, straight to their phone.</p></div></div>
+          <div class="phone appd" role="img" aria-label="Notifications"><div class="screen lockscr">
+            <div class="sb"><span></span><span class="sbr"><svg class="sg"><use href="#s-sig"/></svg><svg class="bt"><use href="#s-bat"/></svg></span></div>
+            <div class="lock">
+              <div class="lk-date">Saturday 31 October</div>
+              <div class="lk-time">07:42</div>
+              <div class="lk-list">
+                <div class="lk-n"><svg><use href="#appicon"/></svg><div><i><span>CARZERO</span><span>now</span></i><b>Schedule changed</b><span>Service A moved to 11:15. Tyres for SS4: 4x gravel hard.</span></div></div>
+                <div class="lk-n"><svg><use href="#appicon"/></svg><div><i><span>CARZERO</span><span>6m ago</span></i><b>New document</b><span>Road book v2 is available offline.</span></div></div>
+                <div class="lk-n"><svg><use href="#appicon"/></svg><div><i><span>CARZERO</span><span>1h ago</span></i><b>Fuel plan updated</b><span>Refuel 2: i20 N Rally2, 48 L.</span></div></div>
+              </div>
+              <div class="lk-bar"></div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="sw" role="group" aria-label="Team colour"><span>Try a team colour</span>
+          <button type="button" style="--c:#3D74E0" data-c="#3D74E0" aria-label="Blue" aria-pressed="true"></button>
+          <button type="button" style="--c:#E5484D" data-c="#E5484D" aria-label="Red" aria-pressed="false"></button>
+          <button type="button" style="--c:#22A861" data-c="#22A861" aria-label="Green" aria-pressed="false"></button>
+          <button type="button" style="--c:#EE7A2B" data-c="#EE7A2B" aria-label="Orange" aria-pressed="false"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="portal" class="sec" style="padding-top:0">
+    <div class="wrap">
+      <div class="sh rv"><div class="rb"><span class="rb-n">04</span><svg class="tulip" aria-hidden="true"><use href="#t-left"/></svg><span class="eyebrow">The portal</span><span class="rb-km" aria-hidden="true">7.15 km</span></div><h2>A web portal for the people who run the team.</h2><p class="lead">Managers build the whole rally in a browser, and the app updates on every phone within seconds.</p></div>
+
+      <div class="win rv" role="img" aria-label="Portal screenshot, sample data">
+        <div class="wtop"><i></i><i></i><i></i><span class="wurl"><svg class="ico"><use href="#i-lock"/></svg>CarZero · Portal</span></div>
+        <div class="wbody">
+          <div class="side">
+            <div class="lg"><svg><use href="#mark"/></svg>CARZERO</div>
+            <span><svg class="ico"><use href="#i-flag"/></svg>Rallies</span>
+            <span class="on"><svg class="ico"><use href="#i-cal"/></svg>Schedule</span>
+            <span><svg class="ico"><use href="#i-fuel"/></svg>Fuel &amp; tyres</span>
+            <span><svg class="ico"><use href="#i-pin"/></svg>Places</span>
+            <span><svg class="ico"><use href="#i-doc"/></svg>Documents</span>
+            <span><svg class="ico"><use href="#i-people"/></svg>Staff</span>
+            <span><svg class="ico"><use href="#i-car"/></svg>Cars</span>
+            <span><svg class="ico"><use href="#i-history"/></svg>History</span>
+          </div>
+          <div class="main">
+            <div class="mh">
+              <div><small>Working on</small><b>Northland Rally <svg class="ico"><use href="#i-chev-d"/></svg></b></div>
+              <div class="mh-r"><span class="mbtn"><svg class="ico"><use href="#i-print"/></svg>Print PDF</span><span class="mbtn pri"><svg class="ico"><use href="#i-plus"/></svg>Activity</span></div>
+            </div>
+            <div class="mdays"><span>Fri 30</span><span class="on">Sat 31</span><span>Sun 1</span><span>Mon 2</span></div>
+            <div class="tbl">
+              <div class="tr h"><div>Time</div><div>Activity</div><div>Place</div><div>Who</div></div>
+              <div class="tr"><div>06:30</div><div>Breakfast</div><div>Harbour View Hotel</div><div><span class="tag">All</span></div></div>
+              <div class="tr"><div>07:40</div><div>Leave for SS1</div><div>Service park</div><div><span class="tag">Crew A</span></div></div>
+              <div class="tr hot"><div>11:15</div><div>Service A (30 min)<em>Edited</em></div><div>Service park</div><div><span class="tag">All</span></div></div>
+              <div class="tr"><div>14:20</div><div>Refuel 2</div><div>Remote refuel zone</div><div><span class="tag">Refuel crew</span></div></div>
+              <div class="tr"><div>18:05</div><div>Service B (45 min)</div><div>Service park</div><div><span class="tag">All</span></div></div>
+            </div>
+            <div class="hist"><svg class="ico"><use href="#i-history"/></svg><span>Alex Martin moved Service A from 10:45 to 11:15</span><small>07:42</small></div>
+          </div>
+          <div class="aside"><div class="aic">
+            <div class="aic-h"><span class="sp"><svg class="ico"><use href="#i-spark"/></svg></span><b>AI import</b><small>Ready</small></div>
+            <div class="aic-f"><svg class="ico"><use href="#i-doc"/></svg><span>Northland_plan_v3.xlsx</span></div>
+            <div class="aic-g"><div><b>34</b><span>activities</span></div><div><b>12</b><span>rooms</span></div><div><b>18</b><span>tickets</span></div></div>
+            <div class="aic-l"><span><i></i><b>06:30</b>Breakfast</span><span><i></i><b>07:40</b>Leave for SS1</span><span><i></i><b>11:15</b>Service A (30 min)</span><span><i></i><b>14:20</b>Refuel 2</span></div>
+            <div class="aic-x"><span>Check before saving</span><span class="mbtn pri">Save 34</span></div>
+          </div></div>
+        </div>
+      </div>
+      <p class="win-note">Screens use sample data.</p>
+
+      <ul class="caps">
+        <li class="rv"><span class="capi"><svg class="ico" aria-hidden="true"><use href="#i-edit"/></svg></span><span>Schedule, fuel and tyre plans, places and documents, all edited in one place.</span></li>
+        <li class="rv" style="--d:.06s"><span class="capi"><svg class="ico" aria-hidden="true"><use href="#i-people"/></svg></span><span>Staff, cars, hotels and rooms. Your team list and cars carry over from one rally to the next.</span></li>
+        <li class="rv" style="--d:.12s"><span class="capi"><svg class="ico" aria-hidden="true"><use href="#i-print"/></svg></span><span>Print or save the plans as PDF, one page per day, with tick boxes for the service park.</span></li>
+        <li class="rv"><span class="capi"><svg class="ico" aria-hidden="true"><use href="#i-palette"/></svg></span><span>Your logo and your two team colours, in the portal and in the app.</span></li>
+        <li class="rv" style="--d:.06s"><span class="capi"><svg class="ico" aria-hidden="true"><use href="#i-history"/></svg></span><span>A history of every change: who changed what, and when.</span></li>
+        <li class="rv ai-cap" style="--d:.12s"><span class="capi"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span>AI import: drop an Excel or PDF planning, or all your tickets at once, and check what the AI found before anything is saved.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="security" class="sec band">
+    <div class="wrap">
+      <div class="sh solo rv"><div class="rb"><span class="rb-n">05</span><svg class="tulip" aria-hidden="true"><use href="#t-fork-r"/></svg><span class="eyebrow">Security</span><span class="rb-km" aria-hidden="true">9.60 km</span></div><h2>Built to be trusted with a team's data.</h2></div>
+      <div class="stack">
+        <div class="st rv"><span class="sti"><svg class="ico" aria-hidden="true"><use href="#i-cloud-off"/></svg></span><h3>Offline first</h3><p>Everything opened is cached on the phone. Changes made without signal are queued and sent when it returns.</p></div>
+        <div class="st rv" style="--d:.08s"><span class="sti"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><h3>Your team, walled off</h3><p>The database itself keeps each team's data apart. Rival teams on CarZero never see each other's plans.</p></div>
+        <div class="st rv" style="--d:.16s"><span class="sti"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></span><h3>Private files</h3><p>Tickets and photos sit in private storage, served through short-lived links and per-person rules.</p></div>
+        <div class="st rv" style="--d:.24s"><span class="sti"><svg class="ico" aria-hidden="true"><use href="#i-export"/></svg></span><h3>Your data stays yours</h3><p>Two-step login for admins, a full history of changes, and an export of all your data at any time.</p></div>
+      </div>
+      <p class="spec rv"><svg class="ico" aria-hidden="true"><use href="#i-server"/></svg><span>Hosted by Supabase, certified ISO 27001 and SOC 2 Type 2, with daily backups. A security overview and a data processing agreement are available on request.</span></p>
+    </div>
+  </section>
+
+  <section id="start" class="sec">
+    <div class="wrap">
+      <div class="sh rv"><div class="rb"><span class="rb-n">06</span><svg class="tulip" aria-hidden="true"><use href="#t-right"/></svg><span class="eyebrow">Getting started</span><span class="rb-km" aria-hidden="true">11.25 km</span></div><h2>Ready for your next rally in a week.</h2><p class="lead">Already used on the road by Hayden Paddon's rally team, PRG, in New Zealand.</p></div>
+      <ol class="steps">
+        <li class="step rv"><span class="sn">01</span><h3>Your team</h3>
+          <ul class="ticks"><li>We set up your team with your logo and your colours</li><li>You add your staff and your cars once, for every rally</li><li>A guided tour shows each step in the portal</li></ul></li>
+        <li class="step rv" style="--d:.1s"><span class="sn">02</span><h3>Your rally</h3>
+          <ul class="ticks"><li>Build the schedule, fuel and tyre plans, hotels and places</li><li>Drop the road book and documents</li><li>Print the plans for the service park</li></ul></li>
+        <li class="step rv" style="--d:.2s"><span class="sn">03</span><h3>Your crew</h3>
+          <ul class="ticks"><li>Everyone installs the app and logs in with their email</li><li>Notifications on every change that concerns them</li><li>Your first rally is a free pilot</li></ul></li>
+      </ol>
+      <div class="premium rv"><span class="pt"><svg class="ico" aria-hidden="true"><use href="#i-crown"/></svg>Premium</span><p>For premium teams: your own app, with your team's name and logo, published on the App Store and Google Play. We handle the whole set-up and the support.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing" class="sec" style="padding-top:0">
+    <div class="wrap">
+      <div class="sh solo rv"><div class="rb"><span class="rb-n">07</span><svg class="tulip" aria-hidden="true"><use href="#t-straight"/></svg><span class="eyebrow">Pricing</span><span class="rb-km" aria-hidden="true">13.90 km</span></div><h2>Simple to start, built around your team.</h2></div>
+      <div class="price rv">
+        <div class="pl">
+          <span class="eyebrow">Plans start from</span>
+          <p class="pv"><span>€450</span><small>per year</small></p>
+          <p class="pn">The price depends on your team and the options you choose. AI import access depends on your plan.</p>
+        </div>
+        <div class="pr">
+          <p class="pfree"><span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span><span>Your first rally is a free pilot</span></p>
+          <div class="ctas">
+            <a class="btn" href="mailto:tanguypavat@carzeroapp.com?subject=CarZero%20quote"><span>Request a quote</span><span class="arr"><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+            <a class="btn ghost" href="mailto:tanguypavat@carzeroapp.com?subject=CarZero%20demo"><span>Book a demo</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="sec" style="padding-top:0;padding-bottom:clamp(40px,6vw,72px)">
+    <div class="wrap">
+      <div class="final rv">
+        <svg class="topo" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#topo"/></svg>
+        <svg class="bigzero" viewBox="0 0 200 300" aria-hidden="true"><use href="#zero"/></svg>
+        <div>
+          <div class="rb"><span class="rb-n">08</span><svg class="tulip" aria-hidden="true"><use href="#t-finish"/></svg><span class="eyebrow">Contact</span><span class="rb-km" aria-hidden="true">15.40 km</span></div>
+          <h2>Want to see it running? Let's talk.</h2>
+          <p class="lead">In 20 minutes I show you the app and the portal on a sample rally, and we look at how your team works today.</p>
+        </div>
+        <div class="cls">
+          <a class="cl pri" href="mailto:tanguypavat@carzeroapp.com?subject=CarZero%20demo"><span class="ci"><svg class="ico" aria-hidden="true"><use href="#i-video"/></svg></span><span><small>Demo</small><b>Book a 20-minute demo</b></span><svg class="ico go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="cl" href="mailto:tanguypavat@carzeroapp.com"><span class="ci"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg></span><span><small>Email</small><b>tanguypavat@carzeroapp.com</b></span><svg class="ico go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="cl" href="tel:+33628373978"><span class="ci"><svg class="ico" aria-hidden="true"><use href="#i-tel"/></svg></span><span><small>Phone</small><b>+33 6 28 37 39 78</b></span><svg class="ico go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="#top"><svg aria-hidden="true"><use href="#mark"/></svg><b>CARZERO</b></a>
+      <p class="ftag">CarZero · Logistics for rally teams · carzeroapp.com</p>
+      <nav class="flinks" aria-label="Footer">
+        <a href="legal.html">Legal notice</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="#security">Security</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+    <div class="foot-row2"><span>© 2026 CarZero. All rights reserved.</span></div>
+    <div class="mega" aria-hidden="true">CARZER<svg viewBox="0 0 200 300"><use href="#zero"/></svg></div>
+  </div>
+</footer>
+
+<script>
+var root=document.documentElement;
+
+// top bar gets a background once the page scrolls
+var bar=document.querySelector('.top');
+function onScroll(){bar.classList.toggle('scrolled',window.scrollY>8)}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+// hero: each phase of a rally shows its own screen and notifications, and the phases play in turn until one is picked
+var ht=[].slice.call(document.querySelectorAll('.htabs button')),hp=document.querySelectorAll('.hand .hs'),hn=document.querySelectorAll('.nset'),hcur=0,htimer;
+function heroShow(i){
+  hcur=i;
+  ht.forEach(function(b,j){b.setAttribute('aria-pressed',i===j);hp[j].classList.toggle('on',i===j);hn[j].classList.toggle('on',i===j)});
+}
+ht.forEach(function(b,i){b.addEventListener('click',function(){clearInterval(htimer);heroShow(i)})});
+if(!matchMedia('(prefers-reduced-motion:reduce)').matches){
+  htimer=setInterval(function(){if(!document.hidden)heroShow((hcur+1)%ht.length)},6000);
+}
+
+// the app section: each feature shows its own screen
+var fx=[].slice.call(document.querySelectorAll('.fx'));
+fx.forEach(function(item,i){
+  item.querySelector('.fx-btn').addEventListener('click',function(){
+    fx.forEach(function(o,j){o.classList.toggle('on',i===j);o.querySelector('.fx-btn').setAttribute('aria-pressed',i===j)});
+  });
+});
+
+// team colour preview, in the app screens and the portal
+var sw=[].slice.call(document.querySelectorAll('.sw button'));
+sw.forEach(function(b){
+  b.addEventListener('click',function(){
+    root.style.setProperty('--team',b.getAttribute('data-c'));
+    sw.forEach(function(o){o.setAttribute('aria-pressed',o===b)});
+  });
+});
+
+// reveal blocks as they enter the screen
+var rv=document.querySelectorAll('.rv');
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{rootMargin:'0px 0px -6% 0px',threshold:.06});
+  rv.forEach(function(n){io.observe(n)});
+}else{rv.forEach(function(n){n.classList.add('in')})}
+window.addEventListener('beforeprint',function(){rv.forEach(function(n){n.classList.add('in')})});
+</script>
+
+</body>
+</html>
